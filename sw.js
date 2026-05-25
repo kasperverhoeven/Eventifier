@@ -14,10 +14,24 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  if(e.request.url.includes('firestore') || e.request.url.includes('googleapis')) {
+  const url = e.request.url;
+
+  // Ignore Firebase requests completely
+  if (
+    url.includes('firestore.googleapis.com') ||
+    url.includes('firebaseio.com') ||
+    url.includes('firebasedatabase.app') ||
+    url.includes('googleapis.com')
+  ) {
     return;
   }
+
   e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request).catch(() => caches.match('/index.html')))
+    caches.match(e.request).then(cached => {
+      return (
+        cached ||
+        fetch(e.request).catch(() => caches.match('/index.html'))
+      );
+    })
   );
 });

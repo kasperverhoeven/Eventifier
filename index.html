@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta name="theme-color" content="#4A3FD4"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="ODD App"/>
+<title>Aanwezigheidsapp</title>
+<link rel="manifest" href="manifest.json"/>
+<link rel="apple-touch-icon" href="icons/icon-192.png"/>
+<link rel="icon" href="icons/icon-192.png"/>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+:root {
+  --purple: #4A3FD4;
+  --purple-light: #EEF0FF;
+  --purple-mid: #C7C4F5;
+  --green: #1A9E6E;
+  --green-light: #E2F7EF;
+  --amber: #C47A15;
+  --amber-light: #FEF3DC;
+  --red: #D94040;
+  --red-light: #FEE8E8;
+  --bg: #F7F7FB;
+  --surface: #FFFFFF;
+  --border: rgba(0,0,0,0.08);
+  --text: #0F0F1A;
+  --muted: #6B6B80;
+  --radius: 14px;
+  --radius-sm: 9px;
+  --nav-h: 72px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--text); }
+
+#app { height: 100%; display: flex; flex-direction: column; max-width: 480px; margin: 0 auto; position: relative; }
+
+.screen { display: none; flex-direction: column; flex: 1; overflow: hidden; }
+.screen.active { display: flex; }
+
+.topbar {
+  padding: 52px 20px 14px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.topbar h1 { font-size: 20px; font-weight: 600; letter-spacing: -0.3px; }
+.topbar p { font-size: 13px; color: var(--muted); margin-top: 2px; }
+.topbar-actions { display: flex; align-items: flex-start; justify-content: space-between; }
+.admin-badge { background: var(--purple-light); color: var(--purple); font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 20px; margin-top: 3px; flex-shrink: 0; }
+
+.sync-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); display: inline-block; margin-right: 4px; vertical-align: middle; transition: background .3s; }
+.sync-dot.synced { background: var(--green); }
+.sync-dot.syncing { background: var(--amber); }
+.sync-dot.error { background: var(--red); }
+
+.scroll-content { flex: 1; overflow-y: auto; padding: 16px 16px calc(var(--nav-h) + var(--safe-bottom) + 16px); -webkit-overflow-scrolling: touch; }
+
+.nav {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 480px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  padding-bottom: var(--safe-bottom);
+  z-index: 100;
+}
+.nav-btn {
+  background: none; border: none; padding: 10px 4px 8px;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  font-size: 10px; font-family: 'DM Sans', sans-serif;
+  color: var(--muted); cursor: pointer; transition: color .15s;
+}
+.nav-btn svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.nav-btn.active { color: var(--purple); }
+
+.card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); padding: 14px 16px; margin-bottom: 10px; }
+.card-title { font-size: 14px; font-weight: 500; }
+.card-sub { font-size: 12px; color: var(--muted); margin-top: 1px; }
+
+.status-row { display: flex; gap: 6px; margin-top: 10px; }
+.s-btn {
+  flex: 1; padding: 8px 4px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); background: var(--bg);
+  font-size: 12px; font-family: 'DM Sans', sans-serif;
+  color: var(--muted); cursor: pointer; display: flex;
+  align-items: center; justify-content: center; gap: 4px;
+  transition: all .15s;
+}
+.s-btn.p { background: var(--green-light); border-color: var(--green); color: var(--green); font-weight: 500; }
+.s-btn.l { background: var(--amber-light); border-color: var(--amber); color: var(--amber); font-weight: 500; }
+.s-btn.a { background: var(--red-light); border-color: var(--red); color: var(--red); font-weight: 500; }
+.s-btn svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+
+.note-input {
+  width: 100%; margin-top: 8px; padding: 8px 12px;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  font-size: 13px; font-family: 'DM Sans', sans-serif;
+  background: var(--bg); color: var(--text); outline: none;
+}
+.note-input:focus { border-color: var(--purple); }
+
+.primary-btn {
+  width: 100%; padding: 14px; background: var(--purple);
+  color: #fff; border: none; border-radius: var(--radius);
+  font-size: 15px; font-weight: 600; font-family: 'DM Sans', sans-serif;
+  cursor: pointer; transition: opacity .15s; margin-top: 6px;
+}
+.primary-btn:active { opacity: .85; }
+.primary-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+.ghost-btn {
+  background: none; border: none; font-size: 13px;
+  color: var(--muted); cursor: pointer; font-family: 'DM Sans', sans-serif;
+  text-decoration: underline; padding: 8px 0; display: block; width: 100%; text-align: center;
+}
+
+.pill { display: inline-block; font-size: 11px; padding: 2px 9px; border-radius: 20px; font-weight: 500; }
+.pill-p { background: var(--green-light); color: var(--green); }
+.pill-l { background: var(--amber-light); color: var(--amber); }
+.pill-a { background: var(--red-light); color: var(--red); }
+
+.metric-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 14px; }
+.metric { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; }
+.metric-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+.metric-val { font-size: 28px; font-weight: 600; letter-spacing: -1px; }
+.metric-val.green { color: var(--green); }
+.metric-val.amber { color: var(--amber); }
+.metric-val.purple { color: var(--purple); }
+
+.section-label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; margin: 16px 0 8px; }
+
+.member-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); }
+.avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--purple-light); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: var(--purple); flex-shrink: 0; }
+.member-name { font-size: 13px; flex: 1; }
+.dots { display: flex; gap: 3px; flex-wrap: wrap; justify-content: flex-end; max-width: 110px; }
+.dot { width: 10px; height: 10px; border-radius: 50%; background: var(--border); }
+.dot.p { background: var(--green); }
+.dot.l { background: var(--amber); }
+.dot.a { background: var(--red); }
+
+.day-bar-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--border); }
+.day-bar-label { font-size: 12px; color: var(--text); width: 72px; flex-shrink: 0; }
+.bar-track { flex: 1; height: 7px; background: var(--bg); border-radius: 4px; overflow: hidden; }
+.bar-fill { height: 7px; background: var(--purple); border-radius: 4px; transition: width .4s ease; }
+.bar-count { font-size: 11px; color: var(--muted); width: 24px; text-align: right; font-family: 'DM Mono', monospace; }
+
+.name-screen { display: flex; flex-direction: column; justify-content: center; padding: 40px 28px; flex: 1; gap: 12px; }
+.name-screen h2 { font-size: 24px; font-weight: 600; letter-spacing: -0.5px; }
+.name-screen p { font-size: 14px; color: var(--muted); line-height: 1.5; }
+.big-input { width: 100%; padding: 14px 16px; font-size: 16px; font-family: 'DM Sans', sans-serif; border: 1.5px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text); outline: none; }
+.big-input:focus { border-color: var(--purple); }
+
+.setting-block { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 10px; }
+.setting-row { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--border); }
+.setting-row:last-child { border-bottom: none; }
+.setting-input { flex: 1; border: none; background: transparent; font-size: 13px; font-family: 'DM Sans', sans-serif; color: var(--text); outline: none; min-width: 0; }
+.setting-label-col { font-size: 12px; color: var(--muted); width: 52px; flex-shrink: 0; }
+.del-btn { background: none; border: none; cursor: pointer; color: var(--red); padding: 4px; display: flex; align-items: center; flex-shrink: 0; }
+.del-btn svg { width: 17px; height: 17px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.add-day-btn { width: 100%; padding: 11px; border: 1.5px dashed var(--border); border-radius: var(--radius); background: none; font-size: 13px; color: var(--muted); font-family: 'DM Sans', sans-serif; cursor: pointer; margin-bottom: 10px; }
+.danger-btn { width: 100%; padding: 12px; border: 1px solid var(--red-light); border-radius: var(--radius); background: var(--red-light); font-size: 13px; color: var(--red); font-family: 'DM Sans', sans-serif; font-weight: 500; cursor: pointer; }
+
+#toast { position: fixed; bottom: calc(var(--nav-h) + var(--safe-bottom) + 12px); left: 50%; transform: translateX(-50%); background: var(--text); color: #fff; font-size: 13px; padding: 10px 20px; border-radius: 30px; white-space: nowrap; opacity: 0; transition: opacity .25s; pointer-events: none; z-index: 200; }
+#toast.show { opacity: 1; }
+
+.empty { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 14px; }
+.loading { text-align: center; padding: 30px; color: var(--muted); font-size: 13px; }
+
+.my-day-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.my-day-name { font-size: 13px; }
+.my-day-note { font-size: 11px; color: var(--muted); margin-top: 1px; }
+
+.spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; vertical-align: middle; margin-right: 6px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.live-badge { background: var(--green-light); color: var(--green); font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 20px; margin-left: 6px; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- FILL SCREEN -->
+  <div class="screen active" id="screen-fill">
+    <div id="fill-namestep" class="name-screen">
+      <div style="width:48px;height:48px;background:var(--purple-light);border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      </div>
+      <h2 id="fill-event-title">Laden…</h2>
+      <p>Vul je naam in om je aanwezigheid in te geven voor de verschillende dagen.</p>
+      <input class="big-input" type="text" id="username-input" placeholder="Jouw naam..." autocomplete="name" autocorrect="off" autocapitalize="words"/>
+      <button class="primary-btn" id="confirm-btn" onclick="confirmName()">Verdergaan</button>
+      <button class="ghost-btn" onclick="goAdmin()">Inloggen als organisator</button>
+    </div>
+    <div id="fill-daystep" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
+      <div class="topbar">
+        <div class="topbar-actions">
+          <div>
+            <h1 id="fill-step-title">Opendeurdag</h1>
+            <p id="fill-step-sub">Vul in per dag</p>
+          </div>
+          <button onclick="backToName()" style="background:none;border:none;font-size:13px;color:var(--muted);cursor:pointer;padding:4px 0;">← Terug</button>
+        </div>
+      </div>
+      <div class="scroll-content" id="days-list"></div>
+    </div>
+  </div>
+
+  <!-- MINE SCREEN -->
+  <div class="screen" id="screen-mine">
+    <div class="topbar">
+      <div class="topbar-actions">
+        <div>
+          <h1>Mijn aanwezigheid</h1>
+          <p id="mine-subtitle">-</p>
+        </div>
+        <span class="sync-dot synced" id="mine-sync" title="Gesynchroniseerd"></span>
+      </div>
+    </div>
+    <div class="scroll-content">
+      <div class="metric-grid">
+        <div class="metric"><div class="metric-label">Aanwezig</div><div class="metric-val green" id="my-present">-</div></div>
+        <div class="metric"><div class="metric-label">Later</div><div class="metric-val amber" id="my-late">-</div></div>
+      </div>
+      <div class="section-label">Per dag</div>
+      <div id="my-days-list"></div>
+      <button class="ghost-btn" style="margin-top:14px;" onclick="editMyDays()">Aanwezigheid aanpassen</button>
+    </div>
+  </div>
+
+  <!-- GROUP SCREEN -->
+  <div class="screen" id="screen-group">
+    <div class="topbar">
+      <div class="topbar-actions">
+        <div>
+          <h1>Groepsoverzicht <span class="live-badge">Live</span></h1>
+          <p id="group-subtitle">0 leden ingevuld</p>
+        </div>
+        <span class="sync-dot" id="group-sync"></span>
+      </div>
+    </div>
+    <div class="scroll-content">
+      <div class="metric-grid">
+        <div class="metric"><div class="metric-label">Leden ingevuld</div><div class="metric-val purple" id="grp-members">0</div></div>
+        <div class="metric"><div class="metric-label">Totaal aanwezig</div><div class="metric-val green" id="grp-present">0</div></div>
+      </div>
+      <div class="section-label">Aanwezigen per dag</div>
+      <div id="group-bars"></div>
+      <div class="section-label" style="margin-top:16px;">Per lid</div>
+      <div id="group-members"></div>
+    </div>
+  </div>
+
+  <!-- ADMIN SCREEN -->
+  <div class="screen" id="screen-admin">
+    <div class="topbar">
+      <div class="topbar-actions">
+        <div><h1>Beheer</h1><p>Organisatorinstellingen</p></div>
+        <span class="admin-badge">Admin</span>
+      </div>
+    </div>
+    <div class="scroll-content">
+      <div class="section-label">Evenementnaam</div>
+      <div class="setting-block">
+        <div class="setting-row">
+          <input class="setting-input" id="admin-event-name" type="text" placeholder="Naam van het evenement" style="font-size:15px;font-weight:500;"/>
+        </div>
+      </div>
+      <div class="section-label">Dagen &amp; tijden</div>
+      <div id="admin-days-list"></div>
+      <button class="add-day-btn" onclick="addDay()">+ Dag toevoegen</button>
+      <button class="primary-btn" id="save-settings-btn" onclick="saveSettingsToFirebase()" style="margin-bottom:20px;">Opslaan in cloud</button>
+      <div class="section-label">Databeheer</div>
+      <button class="danger-btn" onclick="clearData()">Alle aanwezigheidsdata wissen</button>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <button class="nav-btn active" id="nav-fill" onclick="showScreen('fill')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="9" y1="15" x2="15" y2="15"/><line x1="12" y1="12" x2="12" y2="18"/></svg>
+      Invullen
+    </button>
+    <button class="nav-btn" id="nav-mine" onclick="showScreen('mine')">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      Mijn info
+    </button>
+    <button class="nav-btn" id="nav-group" onclick="showScreen('group')">
+      <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M2 20c0-3 2.7-5.5 6-5.5"/><circle cx="16" cy="8" r="3"/><path d="M22 20c0-3-2.7-5.5-6-5.5s-6 2.5-6 5.5"/></svg>
+      Groep
+    </button>
+    <button class="nav-btn" id="nav-admin" onclick="showScreen('admin')">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      Beheer
+    </button>
+  </nav>
+
+  <div id="toast"></div>
+</div>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyBWGGY-Z2DVHHYMPUTK1n1CjdvhC5bGWM4",
+  authDomain: "eventattendence-57554.firebaseapp.com",
+  projectId: "eventattendence-57554",
+  storageBucket: "eventattendence-57554.firebasestorage.app",
+  messagingSenderId: "39862214434",
+  appId: "1:39862214434:web:d54d72c713ee53b1f0cf7b"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+const DEFAULT_SETTINGS = {
+  eventName: 'Opendeurdag 2026',
+  days: [
+    {id:'zo12',label:'Zo 12/04',time:'10u–17u'},
+    {id:'ma13',label:'Ma 13/04',time:'v.a. 16u'},
+    {id:'di14',label:'Di 14/04',time:'v.a. 16u'},
+    {id:'wo15',label:'Wo 15/04',time:'v.a. 16u'},
+    {id:'do16',label:'Do 16/04',time:'v.a. 16u'},
+    {id:'vr17',label:'Vr 17/04',time:'v.a. 16u'},
+    {id:'za18',label:'Za 18/04',time:'10u–17u'},
+    {id:'zo19',label:'Zo 19/04',time:'10u–17u'},
+  ]
+};
+
+let settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+let attendance = {};
+let currentUser = localStorage.getItem('odd_username') || null;
+let userState = {};
+let currentScreen = 'fill';
+let attendanceUnsub = null;
+
+function setSyncDot(id, state) {
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.className = 'sync-dot ' + state;
+}
+
+async function init() {
+  await loadSettings();
+  if(currentUser) {
+    userState = {};
+    const snap = await db.collection('attendance').doc(currentUser).get().catch(()=>null);
+    if(snap && snap.exists) {
+      const data = snap.data();
+      settings.days.forEach(d => { userState[d.id] = data[d.id] || {status:null,note:''}; });
+    } else {
+      settings.days.forEach(d => { userState[d.id] = {status:null,note:''}; });
+    }
+    showNameStep(false);
+  }
+  subscribeAttendance();
+}
+
+async function loadSettings() {
+  try {
+    const snap = await db.collection('config').doc('settings').get();
+    if(snap.exists) {
+      settings = snap.data();
+    } else {
+      await db.collection('config').doc('settings').set(settings);
+    }
+  } catch(e) {
+    const local = localStorage.getItem('odd_settings');
+    if(local) settings = JSON.parse(local);
+  }
+  applySettings();
+}
+
+function subscribeAttendance() {
+  if(attendanceUnsub) attendanceUnsub();
+  setSyncDot('group-sync','syncing');
+  attendanceUnsub = db.collection('attendance').onSnapshot(snap => {
+    attendance = {};
+    snap.forEach(doc => { attendance[doc.id] = doc.data(); });
+    setSyncDot('group-sync','synced');
+    if(currentScreen === 'group') renderGroup();
+    if(currentScreen === 'mine') renderMine();
+  }, () => setSyncDot('group-sync','error'));
+}
+
+function applySettings() {
+  document.getElementById('fill-event-title').textContent = settings.eventName;
+  document.getElementById('fill-step-title').textContent = settings.eventName;
+  document.getElementById('fill-step-sub').textContent = settings.days.length + ' dagen';
+  localStorage.setItem('odd_settings', JSON.stringify(settings));
+}
+
+function showScreen(s) {
+  currentScreen = s;
+  document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('screen-'+s).classList.add('active');
+  document.getElementById('nav-'+s).classList.add('active');
+  if(s==='mine') renderMine();
+  if(s==='group') renderGroup();
+  if(s==='admin') renderAdmin();
+}
+
+function showNameStep(show) {
+  if(show || !currentUser) {
+    document.getElementById('fill-namestep').style.display='flex';
+    document.getElementById('fill-daystep').style.display='none';
+  } else {
+    document.getElementById('fill-namestep').style.display='none';
+    document.getElementById('fill-daystep').style.display='flex';
+    renderDays();
+  }
+}
+
+async function confirmName() {
+  const n = document.getElementById('username-input').value.trim();
+  if(!n) { document.getElementById('username-input').focus(); return; }
+  currentUser = n;
+  localStorage.setItem('odd_username', n);
+  userState = {};
+  try {
+    const snap = await db.collection('attendance').doc(n).get();
+    if(snap.exists) {
+      const data = snap.data();
+      settings.days.forEach(d => { userState[d.id] = data[d.id] || {status:null,note:''}; });
+    } else {
+      settings.days.forEach(d => { userState[d.id] = {status:null,note:''}; });
+    }
+  } catch(e) {
+    settings.days.forEach(d => { userState[d.id] = {status:null,note:''}; });
+  }
+  showNameStep(false);
+}
+
+function backToName() {
+  document.getElementById('fill-namestep').style.display='flex';
+  document.getElementById('fill-daystep').style.display='none';
+}
+
+function renderDays() {
+  const el = document.getElementById('days-list');
+  el.innerHTML = '';
+  settings.days.forEach(d => {
+    const st = userState[d.id] || {status:null,note:''};
+    const card = document.createElement('div');
+    card.className = 'card';
+    const pill = st.status ? `<span class="pill pill-${st.status==='present'?'p':st.status==='late'?'l':'a'}">${st.status==='present'?'Aanwezig':st.status==='late'?'Later':'Afwezig'}</span>` : '';
+    const noteField = (st.status==='late'||st.status==='absent') ?
+      `<input class="note-input" placeholder="${st.status==='late'?'Aankomsttijd (bijv. 18u)':'Reden (optioneel)'}" value="${st.note||''}" oninput="userState['${d.id}'].note=this.value"/>` : '';
+    card.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div><div class="card-title">${d.label}</div><div class="card-sub">${d.time}</div></div>
+        ${pill}
+      </div>
+      <div class="status-row">
+        <button class="s-btn${st.status==='present'?' p':''}" onclick="setDay('${d.id}','present')">
+          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Aanwezig
+        </button>
+        <button class="s-btn${st.status==='late'?' l':''}" onclick="setDay('${d.id}','late')">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Later
+        </button>
+        <button class="s-btn${st.status==='absent'?' a':''}" onclick="setDay('${d.id}','absent')">
+          <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Afwezig
+        </button>
+      </div>
+      ${noteField}`;
+    el.appendChild(card);
+  });
+  const btn = document.createElement('button');
+  btn.className = 'primary-btn';
+  btn.id = 'submit-btn';
+  btn.style.marginTop = '4px';
+  btn.textContent = 'Aanwezigheid bevestigen';
+  btn.onclick = submitAttendance;
+  el.appendChild(btn);
+}
+
+function setDay(id, status) {
+  if(!userState[id]) userState[id]={status:null,note:''};
+  userState[id].status = userState[id].status===status ? null : status;
+  if(!userState[id].status) userState[id].note='';
+  renderDays();
+}
+
+async function submitAttendance() {
+  if(!currentUser) return;
+  const btn = document.getElementById('submit-btn');
+  if(btn) { btn.disabled=true; btn.innerHTML='<span class="spinner"></span>Opslaan…'; }
+  try {
+    const payload = {};
+    settings.days.forEach(d => { payload[d.id] = userState[d.id] || {status:null,note:''}; });
+    payload._name = currentUser;
+    payload._updated = new Date().toISOString();
+    await db.collection('attendance').doc(currentUser).set(payload);
+    toast('Aanwezigheid opgeslagen!');
+    setSyncDot('mine-sync','synced');
+  } catch(e) {
+    toast('Fout bij opslaan. Controleer je verbinding.');
+  }
+  if(btn) { btn.disabled=false; btn.textContent='Aanwezigheid bevestigen'; }
+}
+
+function renderMine() {
+  if(!currentUser) {
+    document.getElementById('mine-subtitle').textContent='Log eerst in via "Invullen"';
+    document.getElementById('my-present').textContent='-';
+    document.getElementById('my-late').textContent='-';
+    document.getElementById('my-days-list').innerHTML='<div class="empty">Vul eerst je naam in via het invulscherm.</div>';
+    return;
+  }
+  document.getElementById('mine-subtitle').textContent = currentUser;
+  const data = attendance[currentUser] || userState;
+  let p=0,l=0;
+  settings.days.forEach(d=>{ const s=data[d.id]; if(s&&s.status==='present') p++; if(s&&s.status==='late') l++; });
+  document.getElementById('my-present').textContent=p;
+  document.getElementById('my-late').textContent=l;
+  const el=document.getElementById('my-days-list');
+  el.innerHTML='';
+  settings.days.forEach(d=>{
+    const st=data[d.id];
+    const row=document.createElement('div');
+    row.className='my-day-row';
+    const statusLabel=!st||!st.status?'<span style="color:var(--muted);font-size:12px;">—</span>'
+      :`<span class="pill pill-${st.status==='present'?'p':st.status==='late'?'l':'a'}">${st.status==='present'?'Aanwezig':st.status==='late'?'Later':'Afwezig'}</span>`;
+    const note=st&&st.note?`<div class="my-day-note">${st.note}</div>`:'';
+    row.innerHTML=`<div><div class="my-day-name">${d.label} <span style="color:var(--muted);font-size:11px;">${d.time}</span></div>${note}</div>${statusLabel}`;
+    el.appendChild(row);
+  });
+}
+
+function editMyDays() {
+  showScreen('fill');
+  if(currentUser) { showNameStep(false); }
+}
+
+function renderGroup() {
+  const members=Object.keys(attendance);
+  document.getElementById('group-subtitle').textContent=members.length+' leden ingevuld';
+  document.getElementById('grp-members').textContent=members.length;
+  let total=0;
+  members.forEach(m=>settings.days.forEach(d=>{ const s=attendance[m][d.id]; if(s&&(s.status==='present'||s.status==='late')) total++; }));
+  document.getElementById('grp-present').textContent=total;
+
+  const barsEl=document.getElementById('group-bars');
+  barsEl.innerHTML='';
+  const max=Math.max(members.length,1);
+  settings.days.forEach(d=>{
+    let cnt=0;
+    members.forEach(m=>{ const s=attendance[m][d.id]; if(s&&(s.status==='present'||s.status==='late')) cnt++; });
+    const pct=Math.round(cnt/max*100);
+    const row=document.createElement('div');
+    row.className='day-bar-row';
+    row.innerHTML=`<span class="day-bar-label">${d.label}</span><div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div><span class="bar-count">${cnt}</span>`;
+    barsEl.appendChild(row);
+  });
+
+  const membersEl=document.getElementById('group-members');
+  membersEl.innerHTML='';
+  if(!members.length){ membersEl.innerHTML='<div class="empty">Nog niemand ingevuld.</div>'; return; }
+  members.forEach(m=>{
+    const row=document.createElement('div');
+    row.className='member-row';
+    const initials=m.trim().split(/\s+/).map(w=>w[0]).join('').toUpperCase().slice(0,2);
+    const data=attendance[m];
+    const dotsHtml=settings.days.map(d=>{
+      const s=data[d.id]; const cls=!s||!s.status?'':s.status==='present'?'p':s.status==='late'?'l':'a';
+      return `<div class="dot ${cls}" title="${d.label}"></div>`;
+    }).join('');
+    row.innerHTML=`<div class="avatar">${initials}</div><div class="member-name">${m}</div><div class="dots">${dotsHtml}</div>`;
+    membersEl.appendChild(row);
+  });
+}
+
+function renderAdmin() {
+  document.getElementById('admin-event-name').value=settings.eventName;
+  const el=document.getElementById('admin-days-list');
+  el.innerHTML='';
+  const block=document.createElement('div');
+  block.className='setting-block';
+  settings.days.forEach((d,i)=>{
+    const row=document.createElement('div');
+    row.className='setting-row';
+    row.innerHTML=`
+      <span class="setting-label-col">Dag ${i+1}</span>
+      <input class="setting-input" type="text" value="${d.label}" oninput="settings.days[${i}].label=this.value" placeholder="Label"/>
+      <input class="setting-input" type="text" value="${d.time}" oninput="settings.days[${i}].time=this.value" placeholder="Uur" style="width:82px;flex:none;"/>
+      <button class="del-btn" onclick="removeDay(${i})" aria-label="Verwijder dag">
+        <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+      </button>`;
+    block.appendChild(row);
+  });
+  el.appendChild(block);
+}
+
+function addDay() {
+  settings.days.push({id:'day'+Date.now(),label:'Nieuwe dag',time:'v.a. 16u'});
+  renderAdmin();
+}
+
+function removeDay(i) {
+  settings.days.splice(i,1);
+  renderAdmin();
+}
+
+async function saveSettingsToFirebase() {
+  const btn=document.getElementById('save-settings-btn');
+  btn.disabled=true;
+  btn.innerHTML='<span class="spinner"></span>Opslaan…';
+  settings.eventName=document.getElementById('admin-event-name').value.trim()||settings.eventName;
+  try {
+    await db.collection('config').doc('settings').set(settings);
+    applySettings();
+    toast('Instellingen opgeslagen in cloud!');
+  } catch(e) {
+    toast('Fout bij opslaan. Controleer je verbinding.');
+  }
+  btn.disabled=false;
+  btn.textContent='Opslaan in cloud';
+}
+
+async function clearData() {
+  if(!confirm('Alle aanwezigheidsdata wissen? Dit kan niet ongedaan gemaakt worden.')) return;
+  try {
+    const snap=await db.collection('attendance').get();
+    const batch=db.batch();
+    snap.forEach(doc=>batch.delete(doc.ref));
+    await batch.commit();
+    attendance={};
+    toast('Alle data gewist.');
+  } catch(e) {
+    toast('Fout bij wissen.');
+  }
+}
+
+function goAdmin() { showScreen('admin'); }
+
+function toast(msg) {
+  const el=document.getElementById('toast');
+  el.textContent=msg;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),2500);
+}
+
+if('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+
+init();
+</script>
+</body>
+</html>

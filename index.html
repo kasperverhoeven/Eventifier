@@ -308,6 +308,10 @@ html, body { height: 100%; overflow: hidden; background: var(--bg); font-family:
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
 <script>
+const ADMIN_PASSWORD = "Scoutskontich28";
+let isAdmin = false;
+
+<script>
 const firebaseConfig = {
   apiKey: "AIzaSyBWGGY-Z2DVHHYMPUTK1n1CjdvhC5bGWM4",
   authDomain: "eventattendence-57554.firebaseapp.com",
@@ -340,6 +344,23 @@ let currentUser = localStorage.getItem('odd_username') || null;
 let userState = {};
 let currentScreen = 'fill';
 let attendanceUnsub = null;
+
+function goAdmin() {
+  const pwd = prompt("Admin wachtwoord:");
+  if (pwd === ADMIN_PASSWORD) {
+    isAdmin = true;
+    showScreen('admin');
+    renderAdmin();
+  } else {
+    alert("Fout wachtwoord");
+  }
+}
+
+function showScreen(s) {
+  if (s === 'admin' && !isAdmin) {
+    goAdmin();
+    return;
+  }
 
 function setSyncDot(id, state) {
   const el = document.getElementById(id);

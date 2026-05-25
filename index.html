@@ -303,16 +303,15 @@ html, body { height: 100%; overflow: hidden; background: var(--bg); font-family:
   <div id="toast"></div>
 </div>
 
-const ADMIN_PASSWORD = "Scoutskontich28";
-let isAdmin = false;
-  
 <!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
+<script>
 const firebaseConfig = {
   apiKey: "AIzaSyBWGGY-Z2DVHHYMPUTK1n1CjdvhC5bGWM4",
   authDomain: "eventattendence-57554.firebaseapp.com",
+  databaseURL: "https://eventattendence-57554-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "eventattendence-57554",
   storageBucket: "eventattendence-57554.firebasestorage.app",
   messagingSenderId: "39862214434",
@@ -342,36 +341,6 @@ let currentUser = localStorage.getItem('odd_username') || null;
 let userState = {};
 let currentScreen = 'fill';
 let attendanceUnsub = null;
-
-function goAdmin() {
-  const pwd = prompt("Admin wachtwoord:");
-  if (pwd === ADMIN_PASSWORD) {
-    isAdmin = true;
-    showScreen('admin');
-    renderAdmin();
-  } else {
-    alert("Fout wachtwoord");
-  }
-}
-
-function showScreen(s) {
-  currentScreen = s;
-
-  document.querySelectorAll('.screen').forEach(el =>
-    el.classList.remove('active')
-  );
-
-  document.querySelectorAll('.nav-btn').forEach(el =>
-    el.classList.remove('active')
-  );
-
-  document.getElementById('screen-' + s).classList.add('active');
-  document.getElementById('nav-' + s).classList.add('active');
-
-  if (s === 'mine') renderMine();
-  if (s === 'group') renderGroup();
-  if (s === 'admin') renderAdmin();
-}
 
 function setSyncDot(id, state) {
   const el = document.getElementById(id);
@@ -671,6 +640,8 @@ async function clearData() {
   }
 }
 
+function goAdmin() { showScreen('admin'); }
+
 function toast(msg) {
   const el=document.getElementById('toast');
   el.textContent=msg;
@@ -685,4 +656,4 @@ if('serviceWorker' in navigator) {
 init();
 </script>
 </body>
-</html>
+</html>    Perfect! It works. Now the only thing that i miss is that i need a login for admin to make changes --> password Scoutskontich28

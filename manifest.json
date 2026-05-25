@@ -1,8 +1,8 @@
 {
   "name": "Aanwezigheidsapp",
-  "short_name": "ODD App",
+  "short_name": "Aanwezigheidsapp",
   "description": "Aanwezigheid bijhouden voor groepsevenementen",
-  "start_url": "/",
+  "start_url": "/eventattendence/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#F7F7FB",

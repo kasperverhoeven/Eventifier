@@ -259,14 +259,14 @@ function hashStr(str){
 const DEFAULT_SETTINGS = {
   eventName:'Kickoff 2026',
   days:[
-    {id:'zo1',label:'Zo 01/01',time:'10u–17u',target:>20},
-    {id:'ma',label:'Ma 02/01',time:'16u–',target:>10},
-    {id:'di',label:'Di 03/01',time:'16u–',target:>10},
-    {id:'wo',label:'Wo 04/01',time:'16u–',target:>10},
-    {id:'do',label:'Do 05/01',time:'16u–',target:>10},
-    {id:'vr',label:'Vr 06/01',time:'16u–',target:>10},
-    {id:'za',label:'Za 07/01',time:'16u–',target:>10},
-    {id:'zo2',label:'Zo 08/01',time:'16u–',target:>20},
+    {id:'zo1',label:'Zo 01/01',time:'10u–17u',target:20},
+    {id:'ma',label:'Ma 02/01',time:'16u–',target:10},
+    {id:'di',label:'Di 03/01',time:'16u–',target:10},
+    {id:'wo',label:'Wo 04/01',time:'16u–',target:10},
+    {id:'do',label:'Do 05/01',time:'16u–',target:10},
+    {id:'vr',label:'Vr 06/01',time:'16u–',target:10},
+    {id:'za',label:'Za 07/01',time:'10u–',target:20},
+    {id:'zo2',label:'Zo 08/01',time:'10u–',target:20},
   ]
 };
 
@@ -539,17 +539,15 @@ function renderGroup(){
   const members=Object.keys(attendance).filter(m=>!m.startsWith('_'));
   document.getElementById('group-subtitle').textContent=members.length+' leden ingevuld';
   document.getElementById('grp-members').textContent=members.length;
-  const today = new Date();
-  const currentDay = settings.days[today.getDay()];
   let todayCount = 0;
-  if(currentDay){
-    members.forEach(m=>{
-      const s = attendance[m][currentDay.id];
-      if(s && (s.status === 'present' || s.status === 'late')){
-        todayCount++;
-      }
-    });
-  }
+  // Change this manually to the active day
+  const TODAY_EVENT_ID = 'zo1';
+  members.forEach(m=>{
+    const s = attendance[m][TODAY_EVENT_ID];
+    if(s && (s.status === 'present' || s.status === 'late')){
+      todayCount++;
+    }
+  });
   document.getElementById('grp-present').textContent = todayCount;
   const barsEl=document.getElementById('group-bars');
   barsEl.innerHTML='';
@@ -621,7 +619,7 @@ function renderAdmin(){
   el.appendChild(block);
 }
 
-function addDay(){ settings.days.push({id:'day'+Date.now(),label:'Nieuwe dag',time:'16u–',target:>10}); renderAdmin(); }
+function addDay(){ settings.days.push({id:'day'+Date.now(),label:'Nieuwe dag',time:'16u–',target:10}); renderAdmin(); }
 function removeDay(i){ settings.days.splice(i,1); renderAdmin(); }
 
 async function saveSettingsToFirebase(){

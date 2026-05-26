@@ -1,8 +1,8 @@
 {
-  "name": "Aanwezigheidsapp",
-  "short_name": "Aanwezigheidsapp",
+  "name": "Eventifier",
+  "short_name": "Eventifier",
   "description": "Aanwezigheid bijhouden voor groepsevenementen",
-  "start_url": "/eventattendence/",
+  "start_url": "/Eventifier/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#F7F7FB",

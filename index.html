@@ -338,6 +338,7 @@ function toggleLock(){
   if(!isAdmin) return;
   settings.locked = !settings.locked;
   updateLockUI();
+  renderAdmin();
   saveSettingsToFirebase();
   toast(settings.locked ? '🔒 Vergrendeld' : '🔓 Ontgrendeld');
 }
@@ -358,23 +359,18 @@ async function submitAttendance(){
     toast('Vergrendeld door organisator');
     return;
   }
-
   if(!currentUser) return;
-
   const btn=document.getElementById('submit-btn');
   if(btn){
     btn.disabled=true;
     btn.innerHTML='<span class="spinner"></span>Opslaan…';
   }
-
   try{
     const payload={ _name:currentUser, _updated:new Date().toISOString() };
-
     settings.days.forEach(d=>{
       const st=userState[d.id]||{status:null,note:''};
       payload[d.id]={ status: st.status||'none', note: st.note||'' };
     });
-
     await db.collection('attendance').doc(currentUser).set(payload);
     setSyncDot('mine-sync','synced');
     toast('✓ Aanwezigheid opgeslagen!');
@@ -382,7 +378,6 @@ async function submitAttendance(){
     setSyncDot('mine-sync','error');
     toast('Fout bij opslaan: '+e.message);
   }
-
   if(btn){
     btn.disabled=false;
     btn.textContent='Aanwezigheid bevestigen';
@@ -458,6 +453,7 @@ function applySettings(){
   document.getElementById('fill-step-title').textContent=settings.eventName;
   document.getElementById('fill-step-sub').textContent=settings.days.length+' dagen';
   localStorage.setItem('odd_settings',JSON.stringify(settings));
+  updateLockUI();
 }
 
 // ── Navigation ────────────────────────────────────────────
@@ -527,6 +523,21 @@ function renderDays(){
       ${noteField}`;
     el.appendChild(card);
   });
+  if(isLocked()){
+    const locked=document.createElement('div');
+    locked.className='card';
+    locked.style.background='var(--amber-light)';
+    locked.style.borderColor='var(--amber)';
+    locked.innerHTML=`
+      <div style="font-size:13px;font-weight:600;color:var(--amber);">
+        🔒 Aanwezigheden zijn vergrendeld
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px;">
+        Alleen de organisator kan wijzigingen opnieuw openen.
+      </div>
+    `;
+    el.appendChild(locked);
+  }
   const btn=document.createElement('button');
   btn.className='primary-btn';
   btn.id='submit-btn';
@@ -534,35 +545,6 @@ function renderDays(){
   btn.textContent='Aanwezigheid bevestigen';
   btn.onclick=submitAttendance;
   el.appendChild(btn);
-}
-
-function setDay(id,status){
-  if(!userState[id]) userState[id]={status:null,note:''};
-  userState[id].status=userState[id].status===status?null:status;
-  if(!userState[id].status) userState[id].note='';
-  renderDays();
-}
-
-async function submitAttendance(){
-  if(!currentUser) return;
-  const btn=document.getElementById('submit-btn');
-  if(btn){ btn.disabled=true; btn.innerHTML='<span class="spinner"></span>Opslaan…'; }
-  try{
-    // Build payload — use string 'none' instead of null so Firestore stores every day
-    const payload={ _name:currentUser, _updated:new Date().toISOString() };
-    settings.days.forEach(d=>{
-      const st=userState[d.id]||{status:null,note:''};
-      payload[d.id]={ status: st.status||'none', note: st.note||'' };
-    });
-    await db.collection('attendance').doc(currentUser).set(payload);
-    setSyncDot('mine-sync','synced');
-    toast('✓ Aanwezigheid opgeslagen!');
-  }catch(e){
-    setSyncDot('mine-sync','error');
-    toast('Fout bij opslaan: '+e.message);
-    console.error(e);
-  }
-  if(btn){ btn.disabled=false; btn.textContent='Aanwezigheid bevestigen'; }
 }
 
 // ── Mine screen ───────────────────────────────────────────
@@ -646,26 +628,33 @@ function renderGroup(){
   barsEl.innerHTML='';
   const max=Math.max(members.length,1);
   settings.days.forEach(d=>{
-    let cnt=0;
-    members.forEach(m=>{
-      const s=attendance[m][d.id];
-      if(s && (s.status==='present' || s.status==='late')) cnt++;
-    });
-    const target = d.target || 0;
-    const pct = target > 0
-      ? Math.min(Math.round((cnt / target) * 100), 100)
-      : Math.round(cnt / max * 100);
-    const row=document.createElement('div');
-    row.className='day-bar-row';
-    row.innerHTML=`
-      <span class="day-bar-label">${d.label}</span>
-      <div class="bar-track">
-        <div class="bar-fill" style="width:${pct}%"></div>
-      </div>
-      <span class="bar-count">${cnt}/${target}</span>
-    `;
-    barsEl.appendChild(row);
+  let cnt=0;
+  let list=[];
+  members.forEach(m=>{
+    const s=attendance[m][d.id];
+
+    if(s && (s.status==='present' || s.status==='late')){
+      cnt++;
+      list.push(m);
+    }
   });
+  const target = d.target || 0;
+  const pct = target > 0
+    ? Math.min(Math.round((cnt / target) * 100), 100)
+    : Math.round(cnt / max * 100);
+  const row=document.createElement('div');
+  row.className='day-bar-row';
+  row.style.cursor='pointer';
+  row.onclick=()=>showDayDetail(d,list);
+  row.innerHTML=`
+    <span class="day-bar-label">${d.label}</span>
+    <div class="bar-track">
+      <div class="bar-fill" style="width:${pct}%"></div>
+    </div>
+    <span class="bar-count">${cnt}/${target}</span>
+  `;
+  barsEl.appendChild(row);
+});
   const membersEl=document.getElementById('group-members');
   membersEl.innerHTML='';
   if(!members.length){ membersEl.innerHTML='<div class="empty">Nog niemand ingevuld.</div>'; return; }

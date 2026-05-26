@@ -109,16 +109,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:'DM Sans'
 </head>
 <body>
 <div id="app">
-@keyframes slideUp{
-  from{
-    transform:translateY(20px);
-    opacity:0;
-  }
-  to{
-    transform:translateY(0);
-    opacity:1;
-  }
-}
 
   <!-- FILL SCREEN -->
   <div class="screen active" id="screen-fill">
@@ -754,14 +744,16 @@ function showDayDetail(day,membersList){
             display:flex;
             align-items:center;
             justify-content:center;
+            transition:all .15s;
           "
+          onmouseover="this.style.background='var(--purple-light)';this.style.color='var(--purple)'"
+          onmouseout="this.style.background='var(--bg)';this.style.color='var(--muted)'"
         >
           ✕
         </button>
       </div>
       <div>
         ${membersList.map(m=>`
-
           <div style="
             display:flex;
             align-items:center;

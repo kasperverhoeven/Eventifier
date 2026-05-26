@@ -332,7 +332,10 @@ async function init(){
   await loadSettings();
   if(currentUser){
     await loadUserAttendance(currentUser);
-    showNameStep(false);
+    showNameStep(true); // eerst altijd naam-check
+    document.getElementById('username-input').value = currentUser;
+  } else {
+    showNameStep(true);
   }
   subscribeAttendance();
 }
@@ -341,7 +344,7 @@ async function loadSettings(){
   try{
     const snap=await db.collection('config').doc('settings').get();
     if(snap.exists) settings=snap.data();
-    else await db.collection('config').doc('settings').set(settings);
+    else await db.collection('config').doc('settings').set(settings,{merge: true});
   }catch(e){
     const local=localStorage.getItem('odd_settings');
     if(local) settings=JSON.parse(local);
@@ -541,7 +544,7 @@ function renderGroup(){
   document.getElementById('grp-members').textContent=members.length;
   let todayCount = 0;
   // Change this manually to the active day
-  const TODAY_EVENT_ID = 'zo1';
+  const TODAY_EVENT_ID = settings.days[0]?.id;
   members.forEach(m=>{
     const s = attendance[m][TODAY_EVENT_ID];
     if(s && (s.status === 'present' || s.status === 'late')){

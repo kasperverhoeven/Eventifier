@@ -2,11 +2,16 @@
   "name": "Eventifier",
   "short_name": "Eventifier",
   "description": "Aanwezigheid bijhouden voor groepsevenementen",
+
   "start_url": "/Eventifier/",
+  "scope": "/Eventifier/",
+
   "display": "standalone",
   "orientation": "portrait",
+
   "background_color": "#F7F7FB",
   "theme_color": "#4A3FD4",
+
   "icons": [
     {
       "src": "icons/icon-192.png",
@@ -21,6 +26,7 @@
       "purpose": "any maskable"
     }
   ],
+
   "categories": ["utilities", "productivity"],
   "lang": "nl"
 }

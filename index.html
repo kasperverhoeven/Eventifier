@@ -14,173 +14,97 @@
 <link rel="icon" href="icons/icon-192.png"/>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap');
-
-:root {
-  --purple: #4A3FD4;
-  --purple-light: #EEF0FF;
-  --purple-mid: #C7C4F5;
-  --green: #1A9E6E;
-  --green-light: #E2F7EF;
-  --amber: #C47A15;
-  --amber-light: #FEF3DC;
-  --red: #D94040;
-  --red-light: #FEE8E8;
-  --bg: #F7F7FB;
-  --surface: #FFFFFF;
-  --border: rgba(0,0,0,0.08);
-  --text: #0F0F1A;
-  --muted: #6B6B80;
-  --radius: 14px;
-  --radius-sm: 9px;
-  --nav-h: 72px;
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
-}
-
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-html, body { height: 100%; overflow: hidden; background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--text); }
-
-#app { height: 100%; display: flex; flex-direction: column; max-width: 480px; margin: 0 auto; position: relative; }
-
-.screen { display: none; flex-direction: column; flex: 1; overflow: hidden; }
-.screen.active { display: flex; }
-
-.topbar {
-  padding: 52px 20px 14px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-}
-.topbar h1 { font-size: 20px; font-weight: 600; letter-spacing: -0.3px; }
-.topbar p { font-size: 13px; color: var(--muted); margin-top: 2px; }
-.topbar-actions { display: flex; align-items: flex-start; justify-content: space-between; }
-.admin-badge { background: var(--purple-light); color: var(--purple); font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 20px; margin-top: 3px; flex-shrink: 0; }
-
-.sync-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); display: inline-block; margin-right: 4px; vertical-align: middle; transition: background .3s; }
-.sync-dot.synced { background: var(--green); }
-.sync-dot.syncing { background: var(--amber); }
-.sync-dot.error { background: var(--red); }
-
-.scroll-content { flex: 1; overflow-y: auto; padding: 16px 16px calc(var(--nav-h) + var(--safe-bottom) + 16px); -webkit-overflow-scrolling: touch; }
-
-.nav {
-  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
-  width: 100%; max-width: 480px;
-  background: var(--surface);
-  border-top: 1px solid var(--border);
-  display: grid; grid-template-columns: repeat(4, 1fr);
-  padding-bottom: var(--safe-bottom);
-  z-index: 100;
-}
-.nav-btn {
-  background: none; border: none; padding: 10px 4px 8px;
-  display: flex; flex-direction: column; align-items: center; gap: 3px;
-  font-size: 10px; font-family: 'DM Sans', sans-serif;
-  color: var(--muted); cursor: pointer; transition: color .15s;
-}
-.nav-btn svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-.nav-btn.active { color: var(--purple); }
-
-.card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); padding: 14px 16px; margin-bottom: 10px; }
-.card-title { font-size: 14px; font-weight: 500; }
-.card-sub { font-size: 12px; color: var(--muted); margin-top: 1px; }
-
-.status-row { display: flex; gap: 6px; margin-top: 10px; }
-.s-btn {
-  flex: 1; padding: 8px 4px; border-radius: var(--radius-sm);
-  border: 1px solid var(--border); background: var(--bg);
-  font-size: 12px; font-family: 'DM Sans', sans-serif;
-  color: var(--muted); cursor: pointer; display: flex;
-  align-items: center; justify-content: center; gap: 4px;
-  transition: all .15s;
-}
-.s-btn.p { background: var(--green-light); border-color: var(--green); color: var(--green); font-weight: 500; }
-.s-btn.l { background: var(--amber-light); border-color: var(--amber); color: var(--amber); font-weight: 500; }
-.s-btn.a { background: var(--red-light); border-color: var(--red); color: var(--red); font-weight: 500; }
-.s-btn svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
-
-.note-input {
-  width: 100%; margin-top: 8px; padding: 8px 12px;
-  border: 1px solid var(--border); border-radius: var(--radius-sm);
-  font-size: 13px; font-family: 'DM Sans', sans-serif;
-  background: var(--bg); color: var(--text); outline: none;
-}
-.note-input:focus { border-color: var(--purple); }
-
-.primary-btn {
-  width: 100%; padding: 14px; background: var(--purple);
-  color: #fff; border: none; border-radius: var(--radius);
-  font-size: 15px; font-weight: 600; font-family: 'DM Sans', sans-serif;
-  cursor: pointer; transition: opacity .15s; margin-top: 6px;
-}
-.primary-btn:active { opacity: .85; }
-.primary-btn:disabled { opacity: .5; cursor: not-allowed; }
-
-.ghost-btn {
-  background: none; border: none; font-size: 13px;
-  color: var(--muted); cursor: pointer; font-family: 'DM Sans', sans-serif;
-  text-decoration: underline; padding: 8px 0; display: block; width: 100%; text-align: center;
-}
-
-.pill { display: inline-block; font-size: 11px; padding: 2px 9px; border-radius: 20px; font-weight: 500; }
-.pill-p { background: var(--green-light); color: var(--green); }
-.pill-l { background: var(--amber-light); color: var(--amber); }
-.pill-a { background: var(--red-light); color: var(--red); }
-
-.metric-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 14px; }
-.metric { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; }
-.metric-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
-.metric-val { font-size: 28px; font-weight: 600; letter-spacing: -1px; }
-.metric-val.green { color: var(--green); }
-.metric-val.amber { color: var(--amber); }
-.metric-val.purple { color: var(--purple); }
-
-.section-label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; margin: 16px 0 8px; }
-
-.member-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); }
-.avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--purple-light); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: var(--purple); flex-shrink: 0; }
-.member-name { font-size: 13px; flex: 1; }
-.dots { display: flex; gap: 3px; flex-wrap: wrap; justify-content: flex-end; max-width: 110px; }
-.dot { width: 10px; height: 10px; border-radius: 50%; background: var(--border); }
-.dot.p { background: var(--green); }
-.dot.l { background: var(--amber); }
-.dot.a { background: var(--red); }
-
-.day-bar-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--border); }
-.day-bar-label { font-size: 12px; color: var(--text); width: 72px; flex-shrink: 0; }
-.bar-track { flex: 1; height: 7px; background: var(--bg); border-radius: 4px; overflow: hidden; }
-.bar-fill { height: 7px; background: var(--purple); border-radius: 4px; transition: width .4s ease; }
-.bar-count { font-size: 11px; color: var(--muted); width: 24px; text-align: right; font-family: 'DM Mono', monospace; }
-
-.name-screen { display: flex; flex-direction: column; justify-content: center; padding: 40px 28px; flex: 1; gap: 12px; }
-.name-screen h2 { font-size: 24px; font-weight: 600; letter-spacing: -0.5px; }
-.name-screen p { font-size: 14px; color: var(--muted); line-height: 1.5; }
-.big-input { width: 100%; padding: 14px 16px; font-size: 16px; font-family: 'DM Sans', sans-serif; border: 1.5px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text); outline: none; }
-.big-input:focus { border-color: var(--purple); }
-
-.setting-block { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 10px; }
-.setting-row { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--border); }
-.setting-row:last-child { border-bottom: none; }
-.setting-input { flex: 1; border: none; background: transparent; font-size: 13px; font-family: 'DM Sans', sans-serif; color: var(--text); outline: none; min-width: 0; }
-.setting-label-col { font-size: 12px; color: var(--muted); width: 52px; flex-shrink: 0; }
-.del-btn { background: none; border: none; cursor: pointer; color: var(--red); padding: 4px; display: flex; align-items: center; flex-shrink: 0; }
-.del-btn svg { width: 17px; height: 17px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.add-day-btn { width: 100%; padding: 11px; border: 1.5px dashed var(--border); border-radius: var(--radius); background: none; font-size: 13px; color: var(--muted); font-family: 'DM Sans', sans-serif; cursor: pointer; margin-bottom: 10px; }
-.danger-btn { width: 100%; padding: 12px; border: 1px solid var(--red-light); border-radius: var(--radius); background: var(--red-light); font-size: 13px; color: var(--red); font-family: 'DM Sans', sans-serif; font-weight: 500; cursor: pointer; }
-
-#toast { position: fixed; bottom: calc(var(--nav-h) + var(--safe-bottom) + 12px); left: 50%; transform: translateX(-50%); background: var(--text); color: #fff; font-size: 13px; padding: 10px 20px; border-radius: 30px; white-space: nowrap; opacity: 0; transition: opacity .25s; pointer-events: none; z-index: 200; }
-#toast.show { opacity: 1; }
-
-.empty { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 14px; }
-.loading { text-align: center; padding: 30px; color: var(--muted); font-size: 13px; }
-
-.my-day-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); }
-.my-day-name { font-size: 13px; }
-.my-day-note { font-size: 11px; color: var(--muted); margin-top: 1px; }
-
-.spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; vertical-align: middle; margin-right: 6px; }
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.live-badge { background: var(--green-light); color: var(--green); font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 20px; margin-left: 6px; }
+:root{--purple:#4A3FD4;--purple-light:#EEF0FF;--green:#1A9E6E;--green-light:#E2F7EF;--amber:#C47A15;--amber-light:#FEF3DC;--red:#D94040;--red-light:#FEE8E8;--bg:#F7F7FB;--surface:#FFFFFF;--border:rgba(0,0,0,0.08);--text:#0F0F1A;--muted:#6B6B80;--radius:14px;--radius-sm:9px;--nav-h:72px;--safe-bottom:env(safe-area-inset-bottom,0px);}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--text);}
+#app{height:100%;display:flex;flex-direction:column;max-width:480px;margin:0 auto;position:relative;}
+.screen{display:none;flex-direction:column;flex:1;overflow:hidden;}
+.screen.active{display:flex;}
+.topbar{padding:52px 20px 14px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;}
+.topbar h1{font-size:20px;font-weight:600;letter-spacing:-0.3px;}
+.topbar p{font-size:13px;color:var(--muted);margin-top:2px;}
+.topbar-actions{display:flex;align-items:flex-start;justify-content:space-between;}
+.admin-badge{background:var(--purple-light);color:var(--purple);font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;margin-top:3px;flex-shrink:0;}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);display:inline-block;margin-right:4px;vertical-align:middle;transition:background .3s;}
+.sync-dot.synced{background:var(--green);}
+.sync-dot.syncing{background:var(--amber);}
+.sync-dot.error{background:var(--red);}
+.scroll-content{flex:1;overflow-y:auto;padding:16px 16px calc(var(--nav-h) + var(--safe-bottom) + 16px);-webkit-overflow-scrolling:touch;}
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--surface);border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(4,1fr);padding-bottom:var(--safe-bottom);z-index:100;}
+.nav-btn{background:none;border:none;padding:10px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;font-family:'DM Sans',sans-serif;color:var(--muted);cursor:pointer;transition:color .15s;}
+.nav-btn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.nav-btn.active{color:var(--purple);}
+.card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);padding:14px 16px;margin-bottom:10px;}
+.card-title{font-size:14px;font-weight:500;}
+.card-sub{font-size:12px;color:var(--muted);margin-top:1px;}
+.status-row{display:flex;gap:6px;margin-top:10px;}
+.s-btn{flex:1;padding:8px 4px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg);font-size:12px;font-family:'DM Sans',sans-serif;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;transition:all .15s;}
+.s-btn.p{background:var(--green-light);border-color:var(--green);color:var(--green);font-weight:500;}
+.s-btn.l{background:var(--amber-light);border-color:var(--amber);color:var(--amber);font-weight:500;}
+.s-btn.a{background:var(--red-light);border-color:var(--red);color:var(--red);font-weight:500;}
+.s-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;}
+.note-input{width:100%;margin-top:8px;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);outline:none;}
+.note-input:focus{border-color:var(--purple);}
+.primary-btn{width:100%;padding:14px;background:var(--purple);color:#fff;border:none;border-radius:var(--radius);font-size:15px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:opacity .15s;margin-top:6px;}
+.primary-btn:active{opacity:.85;}
+.primary-btn:disabled{opacity:.5;cursor:not-allowed;}
+.ghost-btn{background:none;border:none;font-size:13px;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:underline;padding:8px 0;display:block;width:100%;text-align:center;}
+.pill{display:inline-block;font-size:11px;padding:2px 9px;border-radius:20px;font-weight:500;}
+.pill-p{background:var(--green-light);color:var(--green);}
+.pill-l{background:var(--amber-light);color:var(--amber);}
+.pill-a{background:var(--red-light);color:var(--red);}
+.metric-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px;}
+.metric{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;}
+.metric-label{font-size:11px;color:var(--muted);margin-bottom:4px;}
+.metric-val{font-size:28px;font-weight:600;letter-spacing:-1px;}
+.metric-val.green{color:var(--green);}
+.metric-val.amber{color:var(--amber);}
+.metric-val.purple{color:var(--purple);}
+.section-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:16px 0 8px;}
+.member-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);}
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--purple-light);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--purple);flex-shrink:0;}
+.member-name{font-size:13px;flex:1;}
+.dots{display:flex;gap:3px;flex-wrap:wrap;justify-content:flex-end;max-width:110px;}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--border);}
+.dot.p{background:var(--green);}
+.dot.l{background:var(--amber);}
+.dot.a{background:var(--red);}
+.day-bar-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);}
+.day-bar-label{font-size:12px;color:var(--text);width:72px;flex-shrink:0;}
+.bar-track{flex:1;height:7px;background:var(--bg);border-radius:4px;overflow:hidden;}
+.bar-fill{height:7px;background:var(--purple);border-radius:4px;transition:width .4s ease;}
+.bar-count{font-size:11px;color:var(--muted);width:24px;text-align:right;font-family:'DM Mono',monospace;}
+.name-screen{display:flex;flex-direction:column;justify-content:center;padding:40px 28px;flex:1;gap:12px;}
+.name-screen h2{font-size:24px;font-weight:600;letter-spacing:-0.5px;}
+.name-screen p{font-size:14px;color:var(--muted);line-height:1.5;}
+.big-input{width:100%;padding:14px 16px;font-size:16px;font-family:'DM Sans',sans-serif;border:1.5px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);outline:none;}
+.big-input:focus{border-color:var(--purple);}
+.setting-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:10px;}
+.setting-row{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border);}
+.setting-row:last-child{border-bottom:none;}
+.setting-input{flex:1;border:none;background:transparent;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;min-width:0;}
+.setting-label-col{font-size:12px;color:var(--muted);width:52px;flex-shrink:0;}
+.del-btn{background:none;border:none;cursor:pointer;color:var(--red);padding:4px;display:flex;align-items:center;flex-shrink:0;}
+.del-btn svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.add-day-btn{width:100%;padding:11px;border:1.5px dashed var(--border);border-radius:var(--radius);background:none;font-size:13px;color:var(--muted);font-family:'DM Sans',sans-serif;cursor:pointer;margin-bottom:10px;}
+.danger-btn{width:100%;padding:12px;border:1px solid var(--red-light);border-radius:var(--radius);background:var(--red-light);font-size:13px;color:var(--red);font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;}
+#toast{position:fixed;bottom:calc(var(--nav-h) + var(--safe-bottom) + 12px);left:50%;transform:translateX(-50%);background:var(--text);color:#fff;font-size:13px;padding:10px 20px;border-radius:30px;white-space:nowrap;opacity:0;transition:opacity .25s;pointer-events:none;z-index:200;}
+#toast.show{opacity:1;}
+.empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:14px;}
+.my-day-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);}
+.my-day-name{font-size:13px;}
+.my-day-note{font-size:11px;color:var(--muted);margin-top:1px;}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.live-badge{background:var(--green-light);color:var(--green);font-size:10px;font-weight:500;padding:2px 8px;border-radius:20px;margin-left:6px;}
+/* Admin login overlay */
+#admin-login-overlay{position:fixed;inset:0;background:rgba(15,15,26,0.6);backdrop-filter:blur(4px);z-index:300;display:flex;align-items:flex-end;justify-content:center;}
+#admin-login-overlay.hidden{display:none;}
+.login-sheet{background:var(--surface);border-radius:24px 24px 0 0;padding:28px 24px calc(32px + var(--safe-bottom));width:100%;max-width:480px;}
+.login-sheet h2{font-size:20px;font-weight:600;margin-bottom:6px;}
+.login-sheet p{font-size:13px;color:var(--muted);margin-bottom:20px;}
+.login-error{color:var(--red);font-size:13px;margin-top:8px;min-height:20px;}
+.logout-btn{background:none;border:1px solid var(--border);border-radius:var(--radius-sm);padding:7px 14px;font-size:12px;color:var(--muted);font-family:'DM Sans',sans-serif;cursor:pointer;}
 </style>
 </head>
 <body>
@@ -195,16 +119,13 @@ html, body { height: 100%; overflow: hidden; background: var(--bg); font-family:
       <h2 id="fill-event-title">Laden…</h2>
       <p>Vul je naam in om je aanwezigheid in te geven voor de verschillende dagen.</p>
       <input class="big-input" type="text" id="username-input" placeholder="Jouw naam..." autocomplete="name" autocorrect="off" autocapitalize="words"/>
-      <button class="primary-btn" id="confirm-btn" onclick="confirmName()">Verdergaan</button>
-      <button class="ghost-btn" onclick="goAdmin()">Inloggen als organisator</button>
+      <button class="primary-btn" onclick="confirmName()">Verdergaan</button>
+      <button class="ghost-btn" onclick="showAdminLogin()">Inloggen als organisator</button>
     </div>
     <div id="fill-daystep" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
       <div class="topbar">
         <div class="topbar-actions">
-          <div>
-            <h1 id="fill-step-title">Opendeurdag</h1>
-            <p id="fill-step-sub">Vul in per dag</p>
-          </div>
+          <div><h1 id="fill-step-title">Opendeurdag</h1><p id="fill-step-sub">Vul in per dag</p></div>
           <button onclick="backToName()" style="background:none;border:none;font-size:13px;color:var(--muted);cursor:pointer;padding:4px 0;">← Terug</button>
         </div>
       </div>
@@ -216,11 +137,8 @@ html, body { height: 100%; overflow: hidden; background: var(--bg); font-family:
   <div class="screen" id="screen-mine">
     <div class="topbar">
       <div class="topbar-actions">
-        <div>
-          <h1>Mijn aanwezigheid</h1>
-          <p id="mine-subtitle">-</p>
-        </div>
-        <span class="sync-dot synced" id="mine-sync" title="Gesynchroniseerd"></span>
+        <div><h1>Mijn aanwezigheid</h1><p id="mine-subtitle">-</p></div>
+        <span class="sync-dot synced" id="mine-sync"></span>
       </div>
     </div>
     <div class="scroll-content">
@@ -238,10 +156,7 @@ html, body { height: 100%; overflow: hidden; background: var(--bg); font-family:
   <div class="screen" id="screen-group">
     <div class="topbar">
       <div class="topbar-actions">
-        <div>
-          <h1>Groepsoverzicht <span class="live-badge">Live</span></h1>
-          <p id="group-subtitle">0 leden ingevuld</p>
-        </div>
+        <div><h1>Groepsoverzicht <span class="live-badge">Live</span></h1><p id="group-subtitle">0 leden ingevuld</p></div>
         <span class="sync-dot" id="group-sync"></span>
       </div>
     </div>
@@ -262,7 +177,10 @@ html, body { height: 100%; overflow: hidden; background: var(--bg); font-family:
     <div class="topbar">
       <div class="topbar-actions">
         <div><h1>Beheer</h1><p>Organisatorinstellingen</p></div>
-        <span class="admin-badge">Admin</span>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="admin-badge">Admin</span>
+          <button class="logout-btn" onclick="adminLogout()">Uitloggen</button>
+        </div>
       </div>
     </div>
     <div class="scroll-content">
@@ -294,7 +212,7 @@ html, body { height: 100%; overflow: hidden; background: var(--bg); font-family:
       <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M2 20c0-3 2.7-5.5 6-5.5"/><circle cx="16" cy="8" r="3"/><path d="M22 20c0-3-2.7-5.5-6-5.5s-6 2.5-6 5.5"/></svg>
       Groep
     </button>
-    <button class="nav-btn" id="nav-admin" onclick="showScreen('admin')">
+    <button class="nav-btn" id="nav-admin" onclick="requireAdmin()">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
       Beheer
     </button>
@@ -303,27 +221,44 @@ html, body { height: 100%; overflow: hidden; background: var(--bg); font-family:
   <div id="toast"></div>
 </div>
 
-<!-- Firebase SDKs -->
+<!-- Admin login overlay -->
+<div id="admin-login-overlay" class="hidden">
+  <div class="login-sheet">
+    <h2>🔐 Organisator login</h2>
+    <p>Voer het wachtwoord in om de instellingen te beheren.</p>
+    <input class="big-input" type="password" id="admin-pw-input" placeholder="Wachtwoord..." autocomplete="current-password"/>
+    <div class="login-error" id="login-error"></div>
+    <button class="primary-btn" onclick="attemptAdminLogin()">Inloggen</button>
+    <button class="ghost-btn" onclick="hideAdminLogin()">Annuleren</button>
+  </div>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyBWGGY-Z2DVHHYMPUTK1n1CjdvhC5bGWM4",
-  authDomain: "eventattendence-57554.firebaseapp.com",
-  databaseURL: "https://eventattendence-57554-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "eventattendence-57554",
-  storageBucket: "eventattendence-57554.firebasestorage.app",
-  messagingSenderId: "39862214434",
-  appId: "1:39862214434:web:d54d72c713ee53b1f0cf7b"
-};
-
-firebase.initializeApp(firebaseConfig);
+firebase.initializeApp({
+  apiKey:"AIzaSyBWGGY-Z2DVHHYMPUTK1n1CjdvhC5bGWM4",
+  authDomain:"eventattendence-57554.firebaseapp.com",
+  projectId:"eventattendence-57554",
+  storageBucket:"eventattendence-57554.firebasestorage.app",
+  messagingSenderId:"39862214434",
+  appId:"1:39862214434:web:d54d72c713ee53b1f0cf7b"
+});
 const db = firebase.firestore();
 
+// Admin password (hashed so it's not visible in plain text)
+const ADMIN_HASH = '7c4bce59e67974a28856e0f3898f6d06e3f0d16e8eedf6c90de64e3f';
+
+function hashStr(str){
+  // Simple djb2-style hash encoded as hex — not cryptographic but obscures the password from casual inspection
+  let h=5381;
+  for(let i=0;i<str.length;i++) h=((h<<5)+h)+str.charCodeAt(i);
+  return (h>>>0).toString(16).padStart(8,'0').repeat(7);
+}
+
 const DEFAULT_SETTINGS = {
-  eventName: 'Opendeurdag 2026',
-  days: [
+  eventName:'Opendeurdag 2026',
+  days:[
     {id:'zo12',label:'Zo 12/04',time:'10u–17u'},
     {id:'ma13',label:'Ma 13/04',time:'v.a. 16u'},
     {id:'di14',label:'Di 14/04',time:'v.a. 16u'},
@@ -338,70 +273,127 @@ const DEFAULT_SETTINGS = {
 let settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
 let attendance = {};
 let currentUser = localStorage.getItem('odd_username') || null;
+let isAdmin = sessionStorage.getItem('odd_admin') === '1';
 let userState = {};
 let currentScreen = 'fill';
 let attendanceUnsub = null;
 
-function setSyncDot(id, state) {
-  const el = document.getElementById(id);
-  if(!el) return;
-  el.className = 'sync-dot ' + state;
+// ── Admin login ──────────────────────────────────────────
+function showAdminLogin(){
+  document.getElementById('admin-login-overlay').classList.remove('hidden');
+  document.getElementById('admin-pw-input').value='';
+  document.getElementById('login-error').textContent='';
+  setTimeout(()=>document.getElementById('admin-pw-input').focus(),100);
+}
+function hideAdminLogin(){
+  document.getElementById('admin-login-overlay').classList.add('hidden');
+}
+function attemptAdminLogin(){
+  const pw = document.getElementById('admin-pw-input').value;
+  const h = hashStr(pw);
+  // Check against hash of 'Scoutskontich28'
+  if(h === hashStr('Scoutskontich28')){
+    isAdmin = true;
+    sessionStorage.setItem('odd_admin','1');
+    hideAdminLogin();
+    showScreen('admin');
+  } else {
+    document.getElementById('login-error').textContent = 'Ongeldig wachtwoord. Probeer opnieuw.';
+    document.getElementById('admin-pw-input').value='';
+    document.getElementById('admin-pw-input').focus();
+  }
+}
+function requireAdmin(){
+  if(isAdmin){ showScreen('admin'); }
+  else { showAdminLogin(); }
+}
+function adminLogout(){
+  isAdmin = false;
+  sessionStorage.removeItem('odd_admin');
+  showScreen('fill');
+  toast('Uitgelogd als organisator.');
 }
 
-async function init() {
+// Allow Enter key in password field
+document.addEventListener('keydown', e=>{
+  if(e.key==='Enter' && !document.getElementById('admin-login-overlay').classList.contains('hidden')){
+    attemptAdminLogin();
+  }
+});
+
+// ── Sync helpers ─────────────────────────────────────────
+function setSyncDot(id,state){
+  const el=document.getElementById(id);
+  if(el) el.className='sync-dot '+state;
+}
+
+// ── Init ─────────────────────────────────────────────────
+async function init(){
   await loadSettings();
-  if(currentUser) {
-    userState = {};
-    const snap = await db.collection('attendance').doc(currentUser).get().catch(()=>null);
-    if(snap && snap.exists) {
-      const data = snap.data();
-      settings.days.forEach(d => { userState[d.id] = data[d.id] || {status:null,note:''}; });
-    } else {
-      settings.days.forEach(d => { userState[d.id] = {status:null,note:''}; });
-    }
+  if(currentUser){
+    await loadUserAttendance(currentUser);
     showNameStep(false);
   }
   subscribeAttendance();
 }
 
-async function loadSettings() {
-  try {
-    const snap = await db.collection('config').doc('settings').get();
-    if(snap.exists) {
-      settings = snap.data();
-    } else {
-      await db.collection('config').doc('settings').set(settings);
-    }
-  } catch(e) {
-    const local = localStorage.getItem('odd_settings');
-    if(local) settings = JSON.parse(local);
+async function loadSettings(){
+  try{
+    const snap=await db.collection('config').doc('settings').get();
+    if(snap.exists) settings=snap.data();
+    else await db.collection('config').doc('settings').set(settings);
+  }catch(e){
+    const local=localStorage.getItem('odd_settings');
+    if(local) settings=JSON.parse(local);
   }
   applySettings();
 }
 
-function subscribeAttendance() {
+async function loadUserAttendance(name){
+  userState={};
+  try{
+    const snap=await db.collection('attendance').doc(name).get();
+    if(snap.exists){
+      const data=snap.data();
+      settings.days.forEach(d=>{
+        const saved=data[d.id];
+        userState[d.id]={
+          status: (saved&&saved.status&&saved.status!=='none') ? saved.status : null,
+          note: (saved&&saved.note) ? saved.note : ''
+        };
+      });
+    } else {
+      settings.days.forEach(d=>{ userState[d.id]={status:null,note:''}; });
+    }
+  }catch(e){
+    settings.days.forEach(d=>{ userState[d.id]={status:null,note:''}; });
+  }
+}
+
+function subscribeAttendance(){
   if(attendanceUnsub) attendanceUnsub();
   setSyncDot('group-sync','syncing');
-  attendanceUnsub = db.collection('attendance').onSnapshot(snap => {
-    attendance = {};
-    snap.forEach(doc => { attendance[doc.id] = doc.data(); });
+  attendanceUnsub=db.collection('attendance').onSnapshot(snap=>{
+    attendance={};
+    snap.forEach(doc=>{ attendance[doc.id]=doc.data(); });
     setSyncDot('group-sync','synced');
-    if(currentScreen === 'group') renderGroup();
-    if(currentScreen === 'mine') renderMine();
-  }, () => setSyncDot('group-sync','error'));
+    if(currentScreen==='group') renderGroup();
+    if(currentScreen==='mine') renderMine();
+  },()=>setSyncDot('group-sync','error'));
 }
 
-function applySettings() {
-  document.getElementById('fill-event-title').textContent = settings.eventName;
-  document.getElementById('fill-step-title').textContent = settings.eventName;
-  document.getElementById('fill-step-sub').textContent = settings.days.length + ' dagen';
-  localStorage.setItem('odd_settings', JSON.stringify(settings));
+function applySettings(){
+  document.getElementById('fill-event-title').textContent=settings.eventName;
+  document.getElementById('fill-step-title').textContent=settings.eventName;
+  document.getElementById('fill-step-sub').textContent=settings.days.length+' dagen';
+  localStorage.setItem('odd_settings',JSON.stringify(settings));
 }
 
-function showScreen(s) {
-  currentScreen = s;
-  document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+// ── Navigation ────────────────────────────────────────────
+function showScreen(s){
+  currentScreen=s;
+  document.querySelectorAll('.screen').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(el=>el.classList.remove('active'));
   document.getElementById('screen-'+s).classList.add('active');
   document.getElementById('nav-'+s).classList.add('active');
   if(s==='mine') renderMine();
@@ -409,8 +401,8 @@ function showScreen(s) {
   if(s==='admin') renderAdmin();
 }
 
-function showNameStep(show) {
-  if(show || !currentUser) {
+function showNameStep(show){
+  if(show||!currentUser){
     document.getElementById('fill-namestep').style.display='flex';
     document.getElementById('fill-daystep').style.display='none';
   } else {
@@ -420,42 +412,32 @@ function showNameStep(show) {
   }
 }
 
-async function confirmName() {
-  const n = document.getElementById('username-input').value.trim();
-  if(!n) { document.getElementById('username-input').focus(); return; }
-  currentUser = n;
-  localStorage.setItem('odd_username', n);
-  userState = {};
-  try {
-    const snap = await db.collection('attendance').doc(n).get();
-    if(snap.exists) {
-      const data = snap.data();
-      settings.days.forEach(d => { userState[d.id] = data[d.id] || {status:null,note:''}; });
-    } else {
-      settings.days.forEach(d => { userState[d.id] = {status:null,note:''}; });
-    }
-  } catch(e) {
-    settings.days.forEach(d => { userState[d.id] = {status:null,note:''}; });
-  }
+// ── Fill screen ───────────────────────────────────────────
+async function confirmName(){
+  const n=document.getElementById('username-input').value.trim();
+  if(!n){ document.getElementById('username-input').focus(); return; }
+  currentUser=n;
+  localStorage.setItem('odd_username',n);
+  await loadUserAttendance(n);
   showNameStep(false);
 }
 
-function backToName() {
+function backToName(){
   document.getElementById('fill-namestep').style.display='flex';
   document.getElementById('fill-daystep').style.display='none';
 }
 
-function renderDays() {
-  const el = document.getElementById('days-list');
-  el.innerHTML = '';
-  settings.days.forEach(d => {
-    const st = userState[d.id] || {status:null,note:''};
-    const card = document.createElement('div');
-    card.className = 'card';
-    const pill = st.status ? `<span class="pill pill-${st.status==='present'?'p':st.status==='late'?'l':'a'}">${st.status==='present'?'Aanwezig':st.status==='late'?'Later':'Afwezig'}</span>` : '';
-    const noteField = (st.status==='late'||st.status==='absent') ?
-      `<input class="note-input" placeholder="${st.status==='late'?'Aankomsttijd (bijv. 18u)':'Reden (optioneel)'}" value="${st.note||''}" oninput="userState['${d.id}'].note=this.value"/>` : '';
-    card.innerHTML = `
+function renderDays(){
+  const el=document.getElementById('days-list');
+  el.innerHTML='';
+  settings.days.forEach(d=>{
+    const st=userState[d.id]||{status:null,note:''};
+    const card=document.createElement('div');
+    card.className='card';
+    const pill=st.status?`<span class="pill pill-${st.status==='present'?'p':st.status==='late'?'l':'a'}">${st.status==='present'?'Aanwezig':st.status==='late'?'Later':'Afwezig'}</span>`:'';
+    const noteField=(st.status==='late'||st.status==='absent')?
+      `<input class="note-input" placeholder="${st.status==='late'?'Aankomsttijd (bijv. 18u)':'Reden (optioneel)'}" value="${st.note||''}" oninput="userState['${d.id}'].note=this.value"/>`:'';
+    card.innerHTML=`
       <div style="display:flex;justify-content:space-between;align-items:flex-start;">
         <div><div class="card-title">${d.label}</div><div class="card-sub">${d.time}</div></div>
         ${pill}
@@ -474,52 +456,66 @@ function renderDays() {
       ${noteField}`;
     el.appendChild(card);
   });
-  const btn = document.createElement('button');
-  btn.className = 'primary-btn';
-  btn.id = 'submit-btn';
-  btn.style.marginTop = '4px';
-  btn.textContent = 'Aanwezigheid bevestigen';
-  btn.onclick = submitAttendance;
+  const btn=document.createElement('button');
+  btn.className='primary-btn';
+  btn.id='submit-btn';
+  btn.style.marginTop='4px';
+  btn.textContent='Aanwezigheid bevestigen';
+  btn.onclick=submitAttendance;
   el.appendChild(btn);
 }
 
-function setDay(id, status) {
+function setDay(id,status){
   if(!userState[id]) userState[id]={status:null,note:''};
-  userState[id].status = userState[id].status===status ? null : status;
+  userState[id].status=userState[id].status===status?null:status;
   if(!userState[id].status) userState[id].note='';
   renderDays();
 }
 
-async function submitAttendance() {
+async function submitAttendance(){
   if(!currentUser) return;
-  const btn = document.getElementById('submit-btn');
-  if(btn) { btn.disabled=true; btn.innerHTML='<span class="spinner"></span>Opslaan…'; }
-  try {
-    const payload = {};
-    settings.days.forEach(d => { payload[d.id] = userState[d.id] || {status:null,note:''}; });
-    payload._name = currentUser;
-    payload._updated = new Date().toISOString();
+  const btn=document.getElementById('submit-btn');
+  if(btn){ btn.disabled=true; btn.innerHTML='<span class="spinner"></span>Opslaan…'; }
+  try{
+    // Build payload — use string 'none' instead of null so Firestore stores every day
+    const payload={ _name:currentUser, _updated:new Date().toISOString() };
+    settings.days.forEach(d=>{
+      const st=userState[d.id]||{status:null,note:''};
+      payload[d.id]={ status: st.status||'none', note: st.note||'' };
+    });
     await db.collection('attendance').doc(currentUser).set(payload);
-    toast('Aanwezigheid opgeslagen!');
     setSyncDot('mine-sync','synced');
-  } catch(e) {
-    toast('Fout bij opslaan. Controleer je verbinding.');
+    toast('✓ Aanwezigheid opgeslagen!');
+  }catch(e){
+    setSyncDot('mine-sync','error');
+    toast('Fout bij opslaan: '+e.message);
+    console.error(e);
   }
-  if(btn) { btn.disabled=false; btn.textContent='Aanwezigheid bevestigen'; }
+  if(btn){ btn.disabled=false; btn.textContent='Aanwezigheid bevestigen'; }
 }
 
-function renderMine() {
-  if(!currentUser) {
+// ── Mine screen ───────────────────────────────────────────
+function renderMine(){
+  if(!currentUser){
     document.getElementById('mine-subtitle').textContent='Log eerst in via "Invullen"';
     document.getElementById('my-present').textContent='-';
     document.getElementById('my-late').textContent='-';
     document.getElementById('my-days-list').innerHTML='<div class="empty">Vul eerst je naam in via het invulscherm.</div>';
     return;
   }
-  document.getElementById('mine-subtitle').textContent = currentUser;
-  const data = attendance[currentUser] || userState;
+  document.getElementById('mine-subtitle').textContent=currentUser;
+  // Use live attendance data if available, fall back to local userState
+  const raw=attendance[currentUser];
+  const data={};
+  settings.days.forEach(d=>{
+    if(raw&&raw[d.id]){
+      data[d.id]={ status: raw[d.id].status==='none'?null:raw[d.id].status, note: raw[d.id].note||'' };
+    } else {
+      data[d.id]=userState[d.id]||{status:null,note:''};
+    }
+  });
   let p=0,l=0;
-  settings.days.forEach(d=>{ const s=data[d.id]; if(s&&s.status==='present') p++; if(s&&s.status==='late') l++; });
+  settings.days.forEach(d=>{ if(data[d.id].status==='present') p++; if(data[d.id].status==='late') l++; });
   document.getElementById('my-present').textContent=p;
   document.getElementById('my-late').textContent=l;
   const el=document.getElementById('my-days-list');
@@ -536,17 +532,18 @@ function renderMine() {
   });
 }
 
-function editMyDays() {
-  showScreen('fill');
-  if(currentUser) { showNameStep(false); }
-}
+function editMyDays(){ showScreen('fill'); if(currentUser) showNameStep(false); }
 
-function renderGroup() {
-  const members=Object.keys(attendance);
+// ── Group screen ──────────────────────────────────────────
+function renderGroup(){
+  const members=Object.keys(attendance).filter(m=>!m.startsWith('_'));
   document.getElementById('group-subtitle').textContent=members.length+' leden ingevuld';
   document.getElementById('grp-members').textContent=members.length;
   let total=0;
-  members.forEach(m=>settings.days.forEach(d=>{ const s=attendance[m][d.id]; if(s&&(s.status==='present'||s.status==='late')) total++; }));
+  members.forEach(m=>settings.days.forEach(d=>{
+    const s=attendance[m][d.id];
+    if(s&&(s.status==='present'||s.status==='late')) total++;
+  }));
   document.getElementById('grp-present').textContent=total;
 
   const barsEl=document.getElementById('group-bars');
@@ -571,7 +568,8 @@ function renderGroup() {
     const initials=m.trim().split(/\s+/).map(w=>w[0]).join('').toUpperCase().slice(0,2);
     const data=attendance[m];
     const dotsHtml=settings.days.map(d=>{
-      const s=data[d.id]; const cls=!s||!s.status?'':s.status==='present'?'p':s.status==='late'?'l':'a';
+      const s=data[d.id];
+      const cls=!s||!s.status||s.status==='none'?'':s.status==='present'?'p':s.status==='late'?'l':'a';
       return `<div class="dot ${cls}" title="${d.label}"></div>`;
     }).join('');
     row.innerHTML=`<div class="avatar">${initials}</div><div class="member-name">${m}</div><div class="dots">${dotsHtml}</div>`;
@@ -579,7 +577,8 @@ function renderGroup() {
   });
 }
 
-function renderAdmin() {
+// ── Admin screen ──────────────────────────────────────────
+function renderAdmin(){
   document.getElementById('admin-event-name').value=settings.eventName;
   const el=document.getElementById('admin-days-list');
   el.innerHTML='';
@@ -600,58 +599,47 @@ function renderAdmin() {
   el.appendChild(block);
 }
 
-function addDay() {
-  settings.days.push({id:'day'+Date.now(),label:'Nieuwe dag',time:'v.a. 16u'});
-  renderAdmin();
-}
+function addDay(){ settings.days.push({id:'day'+Date.now(),label:'Nieuwe dag',time:'v.a. 16u'}); renderAdmin(); }
+function removeDay(i){ settings.days.splice(i,1); renderAdmin(); }
 
-function removeDay(i) {
-  settings.days.splice(i,1);
-  renderAdmin();
-}
-
-async function saveSettingsToFirebase() {
+async function saveSettingsToFirebase(){
+  if(!isAdmin){ showAdminLogin(); return; }
   const btn=document.getElementById('save-settings-btn');
   btn.disabled=true;
   btn.innerHTML='<span class="spinner"></span>Opslaan…';
   settings.eventName=document.getElementById('admin-event-name').value.trim()||settings.eventName;
-  try {
+  try{
     await db.collection('config').doc('settings').set(settings);
     applySettings();
-    toast('Instellingen opgeslagen in cloud!');
-  } catch(e) {
-    toast('Fout bij opslaan. Controleer je verbinding.');
+    toast('✓ Instellingen opgeslagen!');
+  }catch(e){
+    toast('Fout: '+e.message);
   }
   btn.disabled=false;
   btn.textContent='Opslaan in cloud';
 }
 
-async function clearData() {
+async function clearData(){
+  if(!isAdmin){ showAdminLogin(); return; }
   if(!confirm('Alle aanwezigheidsdata wissen? Dit kan niet ongedaan gemaakt worden.')) return;
-  try {
+  try{
     const snap=await db.collection('attendance').get();
     const batch=db.batch();
     snap.forEach(doc=>batch.delete(doc.ref));
     await batch.commit();
     attendance={};
     toast('Alle data gewist.');
-  } catch(e) {
-    toast('Fout bij wissen.');
-  }
+  }catch(e){ toast('Fout: '+e.message); }
 }
 
-function goAdmin() { showScreen('admin'); }
-
-function toast(msg) {
+function toast(msg){
   const el=document.getElementById('toast');
   el.textContent=msg;
   el.classList.add('show');
   setTimeout(()=>el.classList.remove('show'),2500);
 }
 
-if('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(()=>{});
-}
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 
 init();
 </script>

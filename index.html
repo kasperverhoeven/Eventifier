@@ -238,14 +238,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:'DM Sans'
   ⛔ Aanwezigheden zijn momenteel vergrendeld door de organisator
 </div>
 
-<script>
-let settings = {
-  eventName:'Kickoff',
-  locked:false,
-  days:[]
-};
-</script>
-
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script>
@@ -334,7 +326,6 @@ document.addEventListener('keydown', e=>{
   }
 });
 
-let attendance = {};
 let currentDayView = null;
 
 // ── LOCK HELPERS ─────────────────────────────
@@ -367,6 +358,36 @@ async function submitAttendance(){
     toast('Vergrendeld door organisator');
     return;
   }
+
+  if(!currentUser) return;
+
+  const btn=document.getElementById('submit-btn');
+  if(btn){
+    btn.disabled=true;
+    btn.innerHTML='<span class="spinner"></span>Opslaan…';
+  }
+
+  try{
+    const payload={ _name:currentUser, _updated:new Date().toISOString() };
+
+    settings.days.forEach(d=>{
+      const st=userState[d.id]||{status:null,note:''};
+      payload[d.id]={ status: st.status||'none', note: st.note||'' };
+    });
+
+    await db.collection('attendance').doc(currentUser).set(payload);
+    setSyncDot('mine-sync','synced');
+    toast('✓ Aanwezigheid opgeslagen!');
+  }catch(e){
+    setSyncDot('mine-sync','error');
+    toast('Fout bij opslaan: '+e.message);
+  }
+
+  if(btn){
+    btn.disabled=false;
+    btn.textContent='Aanwezigheid bevestigen';
+  }
+}
 
 // ── Sync helpers ─────────────────────────────────────────
 function setSyncDot(id,state){
@@ -605,7 +626,7 @@ function renderGroup(){
     row.onclick=()=>showDayDetail(d,list);
     row.innerHTML=`
       <span class="day-bar-label">${d.label}</span>
-      <div class="bar-track"><div class="bar-fill" style="width:${cnt/max(members.length,1)*100}%"></div></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${cnt/Math.max(members.length,1)*100}%"></div></div>
       <span class="bar-count">${cnt}</span>
     `;
     barsEl.appendChild(row);
@@ -622,7 +643,6 @@ function renderGroup(){
     }
   });
   document.getElementById('grp-present').textContent = todayCount;
-  const barsEl=document.getElementById('group-bars');
   barsEl.innerHTML='';
   const max=Math.max(members.length,1);
   settings.days.forEach(d=>{
@@ -691,8 +711,6 @@ function showDayDetail(day,membersList){
 // ── Admin screen ──────────────────────────────────────────
 function renderAdmin(){
   document.getElementById('admin-event-name').value=settings.eventName;
-  const el=document.getElementById('admin-days-list');
-  el.innerHTML='';
   const el=document.getElementById('admin-days-list');
   el.innerHTML='';
   const lockBtn=document.createElement('button');

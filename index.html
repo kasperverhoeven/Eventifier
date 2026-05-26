@@ -7,8 +7,8 @@
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<meta name="apple-mobile-web-app-title" content="ODD App"/>
-<title>Aanwezigheidsapp</title>
+<meta name="apple-mobile-web-app-title" content="Eventifier"/>
+<title>Eventifier</title>
 <link rel="manifest" href="manifest.json"/>
 <link rel="apple-touch-icon" href="icons/icon-192.png"/>
 <link rel="icon" href="icons/icon-192.png"/>
@@ -163,7 +163,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:'DM Sans'
     <div class="scroll-content">
       <div class="metric-grid">
         <div class="metric"><div class="metric-label">Leden ingevuld</div><div class="metric-val purple" id="grp-members">0</div></div>
-        <div class="metric"><div class="metric-label">Totaal aanwezig</div><div class="metric-val green" id="grp-present">0</div></div>
+        <div class="metric"><div class="metric-label">Vandaag aanwezig</div><div class="metric-val green" id="grp-present">0</div></div>
       </div>
       <div class="section-label">Aanwezigen per dag</div>
       <div id="group-bars"></div>
@@ -257,16 +257,16 @@ function hashStr(str){
 }
 
 const DEFAULT_SETTINGS = {
-  eventName:'Opendeurdag 2026',
+  eventName:'Kickoff 2026',
   days:[
-    {id:'zo12',label:'Zo 12/04',time:'10u–17u'},
-    {id:'ma13',label:'Ma 13/04',time:'v.a. 16u'},
-    {id:'di14',label:'Di 14/04',time:'v.a. 16u'},
-    {id:'wo15',label:'Wo 15/04',time:'v.a. 16u'},
-    {id:'do16',label:'Do 16/04',time:'v.a. 16u'},
-    {id:'vr17',label:'Vr 17/04',time:'v.a. 16u'},
-    {id:'za18',label:'Za 18/04',time:'10u–17u'},
-    {id:'zo19',label:'Zo 19/04',time:'10u–17u'},
+    {id:'zo1',label:'Zo 01/01',time:'10u–17u',target:>20},
+    {id:'ma',label:'Ma 02/01',time:'16u–',target:>10},
+    {id:'di',label:'Di 03/01',time:'16u–',target:>10},
+    {id:'wo',label:'Wo 04/01',time:'16u–',target:>10},
+    {id:'do',label:'Do 05/01',time:'16u–',target:>10},
+    {id:'vr',label:'Vr 06/01',time:'16u–',target:>10},
+    {id:'za',label:'Za 07/01',time:'16u–',target:>10},
+    {id:'zo2',label:'Zo 08/01',time:'16u–',target:>20},
   ]
 };
 
@@ -539,23 +539,40 @@ function renderGroup(){
   const members=Object.keys(attendance).filter(m=>!m.startsWith('_'));
   document.getElementById('group-subtitle').textContent=members.length+' leden ingevuld';
   document.getElementById('grp-members').textContent=members.length;
-  let total=0;
-  members.forEach(m=>settings.days.forEach(d=>{
-    const s=attendance[m][d.id];
-    if(s&&(s.status==='present'||s.status==='late')) total++;
-  }));
-  document.getElementById('grp-present').textContent=total;
-
+  const today = new Date();
+  const currentDay = settings.days[today.getDay()];
+  let todayCount = 0;
+  if(currentDay){
+    members.forEach(m=>{
+      const s = attendance[m][currentDay.id];
+      if(s && (s.status === 'present' || s.status === 'late')){
+        todayCount++;
+      }
+    });
+  }
+  document.getElementById('grp-present').textContent = todayCount;
   const barsEl=document.getElementById('group-bars');
   barsEl.innerHTML='';
   const max=Math.max(members.length,1);
   settings.days.forEach(d=>{
     let cnt=0;
-    members.forEach(m=>{ const s=attendance[m][d.id]; if(s&&(s.status==='present'||s.status==='late')) cnt++; });
-    const pct=Math.round(cnt/max*100);
+    members.forEach(m=>{
+      const s=attendance[m][d.id];
+      if(s && (s.status==='present' || s.status==='late')) cnt++;
+    });
+    const target = d.target || 0;
+    const pct = target > 0
+      ? Math.min(Math.round((cnt / target) * 100), 100)
+      : Math.round(cnt / max * 100);
     const row=document.createElement('div');
     row.className='day-bar-row';
-    row.innerHTML=`<span class="day-bar-label">${d.label}</span><div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div><span class="bar-count">${cnt}</span>`;
+    row.innerHTML=`
+      <span class="day-bar-label">${d.label}</span>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:${pct}%"></div>
+      </div>
+      <span class="bar-count">${cnt}/${target}</span>
+    `;
     barsEl.appendChild(row);
   });
 
@@ -591,6 +608,11 @@ function renderAdmin(){
       <span class="setting-label-col">Dag ${i+1}</span>
       <input class="setting-input" type="text" value="${d.label}" oninput="settings.days[${i}].label=this.value" placeholder="Label"/>
       <input class="setting-input" type="text" value="${d.time}" oninput="settings.days[${i}].time=this.value" placeholder="Uur" style="width:82px;flex:none;"/>
+      <input class="setting-input" type="number" min="0"
+        value="${d.target || 0}"
+        oninput="settings.days[${i}].target=parseInt(this.value)||0"
+        placeholder="Doel"
+        style="width:70px;flex:none;"/>
       <button class="del-btn" onclick="removeDay(${i})" aria-label="Verwijder dag">
         <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
       </button>`;
@@ -599,7 +621,7 @@ function renderAdmin(){
   el.appendChild(block);
 }
 
-function addDay(){ settings.days.push({id:'day'+Date.now(),label:'Nieuwe dag',time:'v.a. 16u'}); renderAdmin(); }
+function addDay(){ settings.days.push({id:'day'+Date.now(),label:'Nieuwe dag',time:'16u–',target:>10}); renderAdmin(); }
 function removeDay(i){ settings.days.splice(i,1); renderAdmin(); }
 
 async function saveSettingsToFirebase(){

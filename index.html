@@ -109,6 +109,16 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:'DM Sans'
 </head>
 <body>
 <div id="app">
+@keyframes slideUp{
+  from{
+    transform:translateY(20px);
+    opacity:0;
+  }
+  to{
+    transform:translateY(0);
+    opacity:1;
+  }
+}
 
   <!-- FILL SCREEN -->
   <div class="screen active" id="screen-fill">
@@ -682,19 +692,113 @@ function showDayDetail(day,membersList){
   modal.id='day-modal';
   modal.style.position='fixed';
   modal.style.inset='0';
-  modal.style.background='rgba(0,0,0,0.5)';
+  modal.style.background='rgba(15,15,26,0.55)';
+  modal.style.backdropFilter='blur(4px)';
+  modal.style.zIndex='400';
   modal.style.display='flex';
   modal.style.alignItems='flex-end';
+  modal.style.justifyContent='center';
   modal.innerHTML=`
-    <div style="background:white;width:100%;max-width:480px;margin:auto;border-radius:20px 20px 0 0;padding:20px;max-height:70%;overflow:auto;">
-      <h3>${day.label} (${membersList.length})</h3>
-      <button onclick="this.closest('#day-modal').remove()">Sluiten</button>
-      <div style="margin-top:10px;">
-        ${membersList.map(m=>`<div style='padding:8px 0;border-bottom:1px solid #eee;'>${m}</div>`).join('')}
+    <div style="
+      background:var(--surface);
+      width:100%;
+      max-width:480px;
+      border-radius:24px 24px 0 0;
+      padding:22px 20px calc(24px + var(--safe-bottom));
+      max-height:72%;
+      overflow:auto;
+      box-shadow:0 -10px 30px rgba(0,0,0,0.12);
+      animation:slideUp .18s ease;
+    ">
+      <div style="
+        width:42px;
+        height:5px;
+        border-radius:20px;
+        background:rgba(0,0,0,0.12);
+        margin:0 auto 18px;
+      "></div>
+      <div style="
+        display:flex;
+        justify-content:space-between;
+        align-items:flex-start;
+        gap:12px;
+        margin-bottom:18px;
+      ">
+        <div>
+          <div style="
+            font-size:24px;
+            font-weight:600;
+            letter-spacing:-0.5px;
+          ">
+            ${day.label} - ${membersList.length}
+          </div>
+          <div style="
+            font-size:13px;
+            color:var(--muted);
+            margin-top:2px;
+          ">
+            aanwezigen
+          </div>
+        </div>
+        <button
+          onclick="this.closest('#day-modal').remove()"
+          style="
+            border:none;
+            background:var(--bg);
+            width:36px;
+            height:36px;
+            border-radius:50%;
+            cursor:pointer;
+            font-size:18px;
+            color:var(--muted);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+          "
+        >
+          ✕
+        </button>
+      </div>
+      <div>
+        ${membersList.map(m=>`
+
+          <div style="
+            display:flex;
+            align-items:center;
+            gap:12px;
+            padding:12px 0;
+            border-bottom:1px solid var(--border);
+          ">
+            <div style="
+              width:36px;
+              height:36px;
+              border-radius:50%;
+              background:var(--purple-light);
+              color:var(--purple);
+              display:flex;
+              align-items:center;
+              justify-content:center;
+              font-size:12px;
+              font-weight:600;
+              flex-shrink:0;
+            ">
+              ${m.trim().split(/\s+/).map(w=>w[0]).join('').toUpperCase().slice(0,2)}
+            </div>
+            <div style="
+              font-size:14px;
+              font-weight:500;
+            ">
+              ${m}
+            </div>
+          </div>
+        `).join('')}
       </div>
     </div>
   `;
   document.body.appendChild(modal);
+  modal.onclick=(e)=>{
+    if(e.target===modal) modal.remove();
+  };
 }
 
 // ── Admin screen ──────────────────────────────────────────

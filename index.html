@@ -359,6 +359,17 @@ async function submitAttendance(){
     toast('Vergrendeld door organisator');
     return;
   }
+  for(const d of settings.days){
+    const st = userState[d.id];
+    if(
+      st &&
+      st.status === 'absent' &&
+      (!st.note || !st.note.trim())
+    ){
+      toast(`Geef een reden op voor ${d.label}`);
+      return;
+    }
+  }
   if(!currentUser) return;
   const btn=document.getElementById('submit-btn');
   if(btn){
@@ -503,7 +514,7 @@ function renderDays(){
     card.className='card';
     const pill=st.status?`<span class="pill pill-${st.status==='present'?'p':st.status==='late'?'l':'a'}">${st.status==='present'?'Aanwezig':st.status==='late'?'Later':'Afwezig'}</span>`:'';
     const noteField=(st.status==='late'||st.status==='absent')?
-      `<input class="note-input" placeholder="${st.status==='late'?'Aankomsttijd (bijv. 18u)':'Reden (optioneel)'}" value="${st.note||''}" oninput="userState['${d.id}'].note=this.value"/>`:'';
+      `<input class="note-input" placeholder="${st.status==='late'?'Aankomsttijd (bijv. 18u)':'Reden (verplicht)'}" value="${st.note||''}" oninput="userState['${d.id}'].note=this.value"/>`:'';
     card.innerHTML=`
       <div style="display:flex;justify-content:space-between;align-items:flex-start;">
         <div><div class="card-title">${d.label}</div><div class="card-sub">${d.time}</div></div>

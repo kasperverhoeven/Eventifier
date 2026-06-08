@@ -597,7 +597,7 @@ function renderGroup(){
     let list=[];
     members.forEach(m=>{
       const s=attendance[m][d.id];
-      if(s && (s.status==='present'){
+      if(s && s.status === 'present'){
         cnt++;
         list.push(m);
       }
@@ -620,7 +620,7 @@ function renderGroup(){
   const TODAY_EVENT_ID = settings.days[0]?.id;
   members.forEach(m=>{
     const s = attendance[m][TODAY_EVENT_ID];
-    if(s && (s.status === 'present'){
+    if(s && s.status === 'present'){
       todayCount++;
     }
   });

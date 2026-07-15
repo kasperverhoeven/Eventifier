@@ -105,6 +105,16 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:'DM Sans'
 .login-sheet p{font-size:13px;color:var(--muted);margin-bottom:20px;}
 .login-error{color:var(--red);font-size:13px;margin-top:8px;min-height:20px;}
 .logout-btn{background:none;border:1px solid var(--border);border-radius:var(--radius-sm);padding:7px 14px;font-size:12px;color:var(--muted);font-family:'DM Sans',sans-serif;cursor:pointer;}
+.admin-day-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:10px;}
+.admin-day-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.admin-day-select{font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;color:var(--text);background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:7px 10px;outline:none;}
+.admin-day-select:focus{border-color:var(--purple);}
+.admin-day-row{display:flex;gap:8px;margin-bottom:8px;}
+.admin-day-row:last-child{margin-bottom:0;}
+.admin-day-field{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;}
+.admin-day-field label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;}
+.admin-day-field input{border:1px solid var(--border);background:var(--bg);border-radius:var(--radius-sm);padding:8px 10px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;width:100%;min-width:0;}
+.admin-day-field input:focus{border-color:var(--purple);}
 </style>
 </head>
 <body>
@@ -261,17 +271,34 @@ function hashStr(str){
   return (h>>>0).toString(16).padStart(8,'0').repeat(7);
 }
 
+const DAY_NAMES = ['Zo','Ma','Di','Wo','Do','Vr','Za'];
+
+function formatDateShort(iso){
+  if(!iso) return '';
+  const p = iso.split('-');
+  if(p.length!==3) return '';
+  return `${p[2]}/${p[1]}`;
+}
+function dayLabel(d){
+  const datePart = formatDateShort(d.date);
+  const name = d.dayName || '';
+  if(name && datePart) return `${name} ${datePart}`;
+  if(name) return name;
+  if(datePart) return datePart;
+  return 'Dag';
+}
+
 const DEFAULT_SETTINGS = {
   eventName:'Kickoff 2026',
   days:[
-    {id:'zo1',label:'Zo 01/01',time:'10u–17u',target:20,date:'2026-01-04'},
-    {id:'ma',label:'Ma 02/01',time:'16u–',target:10,date:'2026-01-05'},
-    {id:'di',label:'Di 03/01',time:'16u–',target:10,date:'2026-01-06'},
-    {id:'wo',label:'Wo 04/01',time:'16u–',target:10,date:'2026-01-07'},
-    {id:'do',label:'Do 05/01',time:'16u–',target:10,date:'2026-01-08'},
-    {id:'vr',label:'Vr 06/01',time:'16u–',target:10,date:'2026-01-09'},
-    {id:'za',label:'Za 07/01',time:'10u–',target:20,date:'2026-01-10'},
-    {id:'zo2',label:'Zo 08/01',time:'10u–',target:20,date:'2026-01-11'},
+    {id:'zo1',dayName:'Zo',time:'10u–17u',target:20,date:'2026-01-04'},
+    {id:'ma',dayName:'Ma',time:'16u–',target:10,date:'2026-01-05'},
+    {id:'di',dayName:'Di',time:'16u–',target:10,date:'2026-01-06'},
+    {id:'wo',dayName:'Wo',time:'16u–',target:10,date:'2026-01-07'},
+    {id:'do',dayName:'Do',time:'16u–',target:10,date:'2026-01-08'},
+    {id:'vr',dayName:'Vr',time:'16u–',target:10,date:'2026-01-09'},
+    {id:'za',dayName:'Za',time:'10u–',target:20,date:'2026-01-10'},
+    {id:'zo2',dayName:'Zo',time:'10u–',target:20,date:'2026-01-11'},
   ]
 };
 
@@ -381,7 +408,7 @@ async function submitAttendance(){
       st.status === 'absent' &&
       (!st.note || !st.note.trim())
     ){
-      toast(`Geef een reden op voor ${d.label}`);
+      toast(`Geef een reden op voor ${dayLabel(d)}`);
       return;
     }
   }
@@ -536,7 +563,7 @@ function renderDays(){
       `<input class="note-input" placeholder="${st.status==='late'?'Aankomsttijd (bijv. 18u)':'Reden (verplicht)'}" value="${st.note||''}" oninput="userState['${d.id}'].note=this.value"/>`:'';
     card.innerHTML=`
       <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-        <div><div class="card-title">${todayBadge}${d.label}</div><div class="card-sub">${d.time}</div></div>
+        <div><div class="card-title">${todayBadge}${dayLabel(d)}</div><div class="card-sub">${d.time}</div></div>
         ${pill}
       </div>
       <div class="status-row">
@@ -610,7 +637,7 @@ function renderMine(){
     const statusLabel=!st||!st.status?'<span style="color:var(--muted);font-size:12px;">—</span>'
       :`<span class="pill pill-${st.status==='present'?'p':st.status==='late'?'l':'a'}">${st.status==='present'?'Aanwezig':st.status==='late'?'Later':'Afwezig'}</span>`;
     const note=st&&st.note?`<div class="my-day-note">${st.note}</div>`:'';
-    row.innerHTML=`<div><div class="my-day-name">${d.label} <span style="color:var(--muted);font-size:11px;">${d.time}</span></div>${note}</div>${statusLabel}`;
+    row.innerHTML=`<div><div class="my-day-name">${dayLabel(d)} <span style="color:var(--muted);font-size:11px;">${d.time}</span></div>${note}</div>${statusLabel}`;
     el.appendChild(row);
   });
 }
@@ -635,7 +662,7 @@ function renderGroup(){
     });
   }
   const grpLabelEl=document.getElementById('grp-present-label');
-  if(grpLabelEl) grpLabelEl.textContent = todayDay ? `Vandaag aanwezig (${todayDay.label})` : 'Vandaag aanwezig';
+  if(grpLabelEl) grpLabelEl.textContent = todayDay ? `Vandaag aanwezig (${dayLabel(todayDay)})` : 'Vandaag aanwezig';
   document.getElementById('grp-present').textContent = todayDay ? todayCount : '–';
 
   const max=Math.max(members.length,1);
@@ -660,7 +687,7 @@ function renderGroup(){
     if(isToday) row.style.background='var(--purple-light)';
     row.onclick=()=>showDayDetail(d,list);
     row.innerHTML=`
-      <span class="day-bar-label">${d.label}${isToday?' <span class="live-badge" style="margin-left:2px;">Vandaag</span>':''}</span>
+      <span class="day-bar-label">${dayLabel(d)}${isToday?' <span class="live-badge" style="margin-left:2px;">Vandaag</span>':''}</span>
       <div class="bar-track">
         <div class="bar-fill" style="width:${pct}%"></div>
       </div>
@@ -679,7 +706,7 @@ function renderGroup(){
     const dotsHtml=settings.days.map(d=>{
       const s=data[d.id];
       const cls=!s||!s.status||s.status==='none'?'':s.status==='present'?'p':s.status==='late'?'l':'a';
-      return `<div class="dot ${cls}" title="${d.label}"></div>`;
+      return `<div class="dot ${cls}" title="${dayLabel(d)}"></div>`;
     }).join('');
     row.innerHTML=`<div class="avatar">${initials}</div><div class="member-name">${m}</div><div class="dots">${dotsHtml}</div>`;
     membersEl.appendChild(row);
@@ -756,7 +783,7 @@ function showDayDetail(day){
             font-weight:600;
             letter-spacing:-0.5px;
           ">
-            ${day.label}
+            ${dayLabel(day)}
           </div>
           <div style="
             font-size:13px;
@@ -844,33 +871,44 @@ function renderAdmin(){
   const lockBtn=document.createElement('button');
   lockBtn.className='primary-btn';
   lockBtn.style.background = settings.locked ? '#C47A15' : '#4A3FD4';
+  lockBtn.style.marginBottom = '14px';
   lockBtn.textContent = settings.locked ? '🔒 Ontgrendel aanwezigheden' : '🔓 Vergrendel aanwezigheden';
   lockBtn.onclick=toggleLock;
   el.appendChild(lockBtn);
-  const block=document.createElement('div');
-  block.className='setting-block';
   settings.days.forEach((d,i)=>{
-    const row=document.createElement('div');
-    row.className='setting-row';
-    row.innerHTML=`
-      <span class="setting-label-col">Dag ${i+1}</span>
-      <input class="setting-input" type="text" value="${d.label}" oninput="settings.days[${i}].label=this.value" placeholder="Label"/>
-      <input class="setting-input" type="date" value="${d.date||''}" oninput="settings.days[${i}].date=this.value" style="width:132px;flex:none;"/>
-      <input class="setting-input" type="text" value="${d.time}" oninput="settings.days[${i}].time=this.value" placeholder="Uur" style="width:82px;flex:none;"/>
-      <input class="setting-input" type="number" min="0"
-        value="${d.target || 0}"
-        oninput="settings.days[${i}].target=parseInt(this.value)||0"
-        placeholder="Doel"
-        style="width:70px;flex:none;"/>
-      <button class="del-btn" onclick="removeDay(${i})" aria-label="Verwijder dag">
-        <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-      </button>`;
-    block.appendChild(row);
+    const card=document.createElement('div');
+    card.className='admin-day-card';
+    const options=DAY_NAMES.map(n=>`<option value="${n}" ${d.dayName===n?'selected':''}>${n}</option>`).join('');
+    card.innerHTML=`
+      <div class="admin-day-top">
+        <select class="admin-day-select" onchange="settings.days[${i}].dayName=this.value">
+          ${options}
+        </select>
+        <button class="del-btn" onclick="removeDay(${i})" aria-label="Verwijder dag">
+          <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        </button>
+      </div>
+      <div class="admin-day-row">
+        <div class="admin-day-field">
+          <label>Datum</label>
+          <input type="date" value="${d.date||''}" oninput="settings.days[${i}].date=this.value"/>
+        </div>
+        <div class="admin-day-field">
+          <label>Uur</label>
+          <input type="text" value="${d.time||''}" oninput="settings.days[${i}].time=this.value" placeholder="16u–"/>
+        </div>
+      </div>
+      <div class="admin-day-row">
+        <div class="admin-day-field">
+          <label>Doel deelnemers</label>
+          <input type="number" min="0" value="${d.target || 0}" oninput="settings.days[${i}].target=parseInt(this.value)||0"/>
+        </div>
+      </div>`;
+    el.appendChild(card);
   });
-  el.appendChild(block);
 }
 
-function addDay(){ settings.days.push({id:'day'+Date.now(),label:'Nieuwe dag',time:'16u–',target:10,date:''}); renderAdmin(); }
+function addDay(){ settings.days.push({id:'day'+Date.now(),dayName:'Ma',time:'16u–',target:10,date:''}); renderAdmin(); }
 function removeDay(i){ settings.days.splice(i,1); renderAdmin(); }
 
 async function saveSettingsToFirebase(){

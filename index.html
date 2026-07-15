@@ -69,11 +69,12 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:'DM Sans'
 .dot.p{background:var(--green);}
 .dot.l{background:var(--amber);}
 .dot.a{background:var(--red);}
-.day-bar-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);}
+.day-bar-row{display:flex;align-items:center;padding:2px 0;border-bottom:1px solid var(--border);}
+.day-bar-inner{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:10px;width:fit-content;max-width:100%;}
 .day-bar-label{font-size:12px;color:var(--text);width:72px;flex-shrink:0;}
-.bar-track{flex:1;height:7px;background:var(--bg);border-radius:4px;overflow:hidden;}
+.bar-track{width:120px;flex:none;height:7px;background:var(--bg);border-radius:4px;overflow:hidden;}
 .bar-fill{height:7px;background:var(--purple);border-radius:4px;transition:width .4s ease;}
-.bar-count{font-size:11px;color:var(--muted);width:24px;text-align:right;font-family:'DM Mono',monospace;}
+.bar-count{font-size:11px;color:var(--muted);width:32px;text-align:right;font-family:'DM Mono',monospace;flex:none;}
 .name-screen{display:flex;flex-direction:column;justify-content:center;padding:40px 28px;flex:1;gap:12px;}
 .name-screen h2{font-size:24px;font-weight:600;letter-spacing:-0.5px;}
 .name-screen p{font-size:14px;color:var(--muted);line-height:1.5;}
@@ -709,14 +710,16 @@ function renderGroup(){
     const row=document.createElement('div');
     row.className='day-bar-row';
     row.style.cursor='pointer';
-    if(isToday) row.style.background='var(--purple-light)';
     row.onclick=()=>showDayDetail(d,list);
+    const innerStyle = isToday ? 'background:var(--purple-light);' : '';
     row.innerHTML=`
-      <span class="day-bar-label">${dayLabel(d)}${isToday?' <span class="live-badge" style="margin-left:2px;">Vandaag</span>':''}</span>
-      <div class="bar-track">
-        <div class="bar-fill" style="width:${pct}%"></div>
+      <div class="day-bar-inner" style="${innerStyle}">
+        <span class="day-bar-label">${dayLabel(d)}${isToday?' <span class="live-badge" style="margin-left:2px;">Vandaag</span>':''}</span>
+        <div class="bar-track">
+          <div class="bar-fill" style="width:${pct}%"></div>
+        </div>
+        <span class="bar-count">${cnt}/${target}</span>
       </div>
-      <span class="bar-count">${cnt}/${target}</span>
     `;
     barsEl.appendChild(row);
   });

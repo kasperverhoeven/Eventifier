@@ -113,8 +113,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:'DM Sans'
 .admin-day-row{display:flex;gap:8px;margin-bottom:8px;}
 .admin-day-row:last-child{margin-bottom:0;}
 .admin-day-field{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;}
-.admin-day-field.date-field{flex:0 0 128px;}
-.admin-day-field.date-field input{padding:8px 6px;}
 .admin-day-field label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;}
 .admin-day-field input{border:1px solid var(--border);background:var(--bg);border-radius:var(--radius-sm);padding:8px 10px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;width:100%;min-width:0;}
 .admin-day-field input:focus{border-color:var(--purple);}
@@ -917,16 +915,16 @@ function renderAdmin(){
         </button>
       </div>
       <div class="admin-day-row">
-        <div class="admin-day-field date-field">
+        <div class="admin-day-field">
           <label>Datum</label>
           <input type="date" value="${d.date||''}" oninput="settings.days[${i}].date=this.value"/>
         </div>
+      </div>
+      <div class="admin-day-row">
         <div class="admin-day-field">
           <label>Uur</label>
           <input type="text" value="${d.time||''}" oninput="settings.days[${i}].time=this.value" placeholder="16u–"/>
         </div>
-      </div>
-      <div class="admin-day-row">
         <div class="admin-day-field">
           <label>Doel deelnemers</label>
           <input type="number" min="0" value="${d.target || 0}" oninput="settings.days[${i}].target=parseInt(this.value)||0"/>

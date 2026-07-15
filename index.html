@@ -55,7 +55,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:'DM Sans'
 .pill-a{background:var(--red-light);color:var(--red);}
 .metric-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px;}
 .metric{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;}
-.metric-label{font-size:11px;color:var(--muted);margin-bottom:4px;}
+.metric-label{font-size:11px;color:var(--muted);margin-bottom:4px;line-height:1.4;}
 .metric-val{font-size:28px;font-weight:600;letter-spacing:-1px;}
 .metric-val.green{color:var(--green);}
 .metric-val.amber{color:var(--amber);}
@@ -112,6 +112,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:'DM Sans'
 .admin-day-row{display:flex;gap:8px;margin-bottom:8px;}
 .admin-day-row:last-child{margin-bottom:0;}
 .admin-day-field{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;}
+.admin-day-field.date-field{flex:0 0 128px;}
+.admin-day-field.date-field input{padding:8px 6px;}
 .admin-day-field label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;}
 .admin-day-field input{border:1px solid var(--border);background:var(--bg);border-radius:var(--radius-sm);padding:8px 10px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;width:100%;min-width:0;}
 .admin-day-field input:focus{border-color:var(--purple);}
@@ -286,6 +288,28 @@ function dayLabel(d){
   if(name) return name;
   if(datePart) return datePart;
   return 'Dag';
+}
+
+// Figures out a day's short name (Zo/Ma/Di/...) when it isn't set yet —
+// e.g. settings saved before this field existed, or a day copied without one.
+// Prefers the real calendar weekday of its date, then falls back to any old
+// free-text label, then finally to the first option so the UI never shows blank.
+function deriveDayName(d){
+  if(d.dayName) return d.dayName;
+  if(d.date){
+    const dt=new Date(d.date+'T00:00:00');
+    if(!isNaN(dt)) return DAY_NAMES[dt.getDay()];
+  }
+  if(d.label){
+    const first=d.label.trim().split(/\s+/)[0];
+    const match=DAY_NAMES.find(n=>n.toLowerCase()===first.toLowerCase());
+    if(match) return match;
+  }
+  return DAY_NAMES[0];
+}
+function normalizeSettings(s){
+  s.days=(s.days||[]).map(d=>({...d, dayName: deriveDayName(d)}));
+  return s;
 }
 
 const DEFAULT_SETTINGS = {
@@ -465,6 +489,7 @@ async function loadSettings(){
     const local=localStorage.getItem('odd_settings');
     if(local) settings=JSON.parse(local);
   }
+  settings=normalizeSettings(settings);
   applySettings();
 }
 
@@ -662,7 +687,7 @@ function renderGroup(){
     });
   }
   const grpLabelEl=document.getElementById('grp-present-label');
-  if(grpLabelEl) grpLabelEl.textContent = todayDay ? `Vandaag aanwezig (${dayLabel(todayDay)})` : 'Vandaag aanwezig';
+  if(grpLabelEl) grpLabelEl.innerHTML = todayDay ? `Vandaag aanwezig<br>(${dayLabel(todayDay)})` : 'Vandaag aanwezig';
   document.getElementById('grp-present').textContent = todayDay ? todayCount : '–';
 
   const max=Math.max(members.length,1);
@@ -889,7 +914,7 @@ function renderAdmin(){
         </button>
       </div>
       <div class="admin-day-row">
-        <div class="admin-day-field">
+        <div class="admin-day-field date-field">
           <label>Datum</label>
           <input type="date" value="${d.date||''}" oninput="settings.days[${i}].date=this.value"/>
         </div>

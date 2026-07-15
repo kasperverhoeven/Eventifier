@@ -342,6 +342,33 @@ function getTodayDay(){
   const today = getTodayISO();
   return settings.days.find(d=>d.date===today) || null;
 }
+function dateToISO(d){
+  const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+// Returns the ISO date of the next Sunday strictly after today (if today is
+// already a Sunday, this returns the following Sunday, one week out).
+function getNextSundayISO(){
+  const now = new Date();
+  now.setHours(0,0,0,0);
+  let addDays = (7 - now.getDay()) % 7;
+  if(addDays === 0) addDays = 7;
+  const next = new Date(now);
+  next.setDate(now.getDate() + addDays);
+  return dateToISO(next);
+}
+// Reassigns every configured day's real date to consecutive calendar days
+// starting at the next Sunday, preserving whatever labels/times/targets are
+// already configured. Used as the fresh default whenever all attendance
+// data is wiped (e.g. starting a new event).
+function resetDayDatesFromNextSunday(){
+  const start = new Date(getNextSundayISO()+'T00:00:00');
+  settings.days.forEach((d,i)=>{
+    const dt = new Date(start);
+    dt.setDate(start.getDate()+i);
+    d.date = dateToISO(dt);
+  });
+}
 
 // ── LOCK HELPERS ─────────────────────────────
 function isLocked(){ return settings.locked === true; }
@@ -427,6 +454,7 @@ async function init(){
     showNameStep(true);
   }
   subscribeAttendance();
+  subscribeSettings();
 }
 
 async function loadSettings(){
@@ -439,6 +467,25 @@ async function loadSettings(){
     if(local) settings=JSON.parse(local);
   }
   applySettings();
+}
+
+let settingsUnsub = null;
+// Keeps settings (days/dates/times/targets/lock state) live-synced across every
+// open screen and every user, so admin changes show up immediately in
+// "Mijn info", "Groep" and "Invullen" without a manual refresh.
+function subscribeSettings(){
+  if(settingsUnsub) settingsUnsub();
+  settingsUnsub = db.collection('config').doc('settings').onSnapshot(doc=>{
+    if(!doc.exists) return;
+    settings = doc.data();
+    applySettings();
+    if(currentScreen==='mine') renderMine();
+    if(currentScreen==='group') renderGroup();
+    if(currentScreen==='fill' && currentUser && document.getElementById('fill-daystep').style.display!=='none') renderDays();
+    // The Beheer screen is intentionally left alone here so a live update
+    // doesn't wipe out what the organizer is currently typing; it already
+    // reflects the organizer's own local edits.
+  },()=>{ /* connectivity issues already surface via the group sync dot */ });
 }
 
 async function loadUserAttendance(name){
@@ -899,7 +946,11 @@ async function clearData(){
     snap.forEach(doc=>batch.delete(doc.ref));
     await batch.commit();
     attendance={};
-    toast('Alle data gewist.');
+    resetDayDatesFromNextSunday();
+    await db.collection('config').doc('settings').set(settings);
+    applySettings();
+    if(currentScreen==='admin') renderAdmin();
+    toast('Alle data gewist. Dagdatums gereset vanaf eerstvolgende zondag.');
   }catch(e){ toast('Fout: '+e.message); }
 }
 
